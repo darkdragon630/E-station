@@ -1,0 +1,233 @@
+/* === RESET === */
+* { margin: 0; padding: 0; box-sizing: border-box; font-family: "Poppins", sans-serif; }
+
+/* === ANIMASI === */
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(20px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+@keyframes glow {
+  0% { box-shadow: 0 0 8px #3b82f6, 0 0 16px #3b82f6; }
+  100% { box-shadow: 0 0 16px #60a5fa, 0 0 30px #60a5fa; }
+}
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+/* === LOADING SCREEN === */
+/* === EFEK LINGKARAN LISTRIK === */
+.electric-circle {
+  position: absolute;
+  width: 130px;
+  height: 130px;
+  border-radius: 50%;
+  border: 2px solid transparent;
+  border-top: 2px solid #60a5fa;
+  border-right: 2px solid #3b82f6;
+  animation: electric-spin 1.6s linear infinite, electric-glow 1.5s ease-in-out infinite alternate;
+  filter: drop-shadow(0 0 8px #3b82f6);
+}
+
+@keyframes electric-spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+@keyframes electric-glow {
+  0% { box-shadow: 0 0 10px #60a5fa, 0 0 20px #3b82f6; }
+  100% { box-shadow: 0 0 25px #93c5fd, 0 0 45px #60a5fa; }
+}
+
+/* Pastikan posisi loader menumpuk dengan logo */
+#loading-screen .loader {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 15px;
+}
+#loading-screen .loader img {
+  width: 85px;
+  height: 85px;
+  border-radius: 50%;
+  position: relative;
+  z-index: 2;
+  animation: pulseLogo 2s ease-in-out infinite alternate;
+}
+@keyframes pulseLogo {
+  from { transform: scale(1); filter: drop-shadow(0 0 10px #60a5fa); }
+  to { transform: scale(1.05); filter: drop-shadow(0 0 20px #93c5fd); }
+}
+
+#loading-screen {
+  position: fixed;
+  inset: 0;
+  background: linear-gradient(135deg, #0a192f, #1e3a8a);
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  z-index: 9999;
+  transition: opacity 0.8s ease, visibility 0.8s ease;
+}
+#loading-screen .loader img {
+  width: 90px;
+  height: 90px;
+  border-radius: 50%;
+  animation: spin 2.5s linear infinite;
+  border: 2px solid #60a5fa;
+  box-shadow: 0 0 12px rgba(96, 165, 250, 0.5);
+}
+#loading-screen .loader h2 {
+  color: #60a5fa;
+  margin-top: 15px;
+  letter-spacing: 2px;
+  text-shadow: 0 0 8px rgba(96, 165, 250, 0.8);
+  animation: glow 1.5s infinite alternate;
+}
+
+/* === Setelah loading hilang === */
+#loading-screen.hidden {
+  opacity: 0;
+  visibility: hidden;
+}
+
+/* === TOGGLE MODE === */
+.theme-toggle {
+  position: absolute;
+  top: 20px;
+  right: 25px;
+  z-index: 10;
+}
+.theme-toggle button {
+  background: transparent;
+  border: none;
+  font-size: 1.5rem;
+  cursor: pointer;
+  color: inherit;
+  transition: transform 0.3s ease;
+}
+.theme-toggle button:hover { transform: rotate(20deg); }
+
+/* === LAYOUT === */
+body {
+  height: 100vh;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background: linear-gradient(135deg, #0a192f, #1e3a8a);
+  color: #fff;
+  transition: all 0.5s ease;
+  overflow: hidden;
+}
+
+.container {
+  width: 100%;
+  max-width: 420px;
+  padding: 20px;
+  animation: fadeIn 1.2s ease-out;
+}
+
+.login-card {
+  background: #ffffff15;
+  backdrop-filter: blur(14px);
+  border: 1px solid rgba(255, 255, 255, 0.25);
+  border-radius: 20px;
+  padding: 40px 30px;
+  text-align: center;
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.3);
+  animation: fadeIn 1.5s ease-out;
+}
+
+/* === TEXT === */
+.title {
+  font-size: 2rem;
+  letter-spacing: 2px;
+  color: #60a5fa;
+  font-weight: 700;
+  text-shadow: 0 0 10px rgba(96, 165, 250, 0.7);
+}
+.subtitle {
+  font-size: 0.9rem;
+  color: #d1d5db;
+  margin-bottom: 20px;
+}
+
+/* === ILUSTRASI === */
+.illustration img {
+  width: 75%;
+  height: 150px;
+  border-radius: 10px;
+  border: 2px solid #60a5fa;
+  box-shadow: 0 0 12px rgba(96, 165, 250, 0.5);
+  margin-bottom: 20px;
+}
+
+/* === FORM === */
+.login-form { display: flex; flex-direction: column; gap: 15px; text-align: left; }
+.login-form label { font-size: 0.9rem; color: #e5e7eb; }
+.login-form input {
+  padding: 10px 12px;
+  border-radius: 10px;
+  border: none;
+  outline: none;
+  background: rgba(255, 255, 255, 0.1);
+  color: #fff;
+  transition: all 0.3s ease;
+}
+.login-form input:focus {
+  background: rgba(255, 255, 255, 0.2);
+  border: 1px solid #60a5fa;
+  box-shadow: 0 0 10px rgba(96, 165, 250, 0.4);
+}
+
+/* === OPSI === */
+.options { display: flex; justify-content: space-between; align-items: center; font-size: 0.85rem; }
+.options a { color: #60a5fa; text-decoration: none; transition: color 0.3s; }
+.options a:hover { color: #93c5fd; text-decoration: underline; }
+
+/* === TOMBOL LOGIN === */
+.btn-login {
+  background: linear-gradient(90deg, #3b82f6, #60a5fa);
+  border: none;
+  padding: 10px;
+  border-radius: 10px;
+  font-weight: 600;
+  color: white;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+.btn-login:hover {
+  background: linear-gradient(90deg, #2563eb, #3b82f6);
+  transform: translateY(-3px);
+  animation: glow 1.5s alternate infinite;
+}
+
+/* === REGISTER === */
+.register { margin-top: 20px; font-size: 0.9rem; color: #d1d5db; }
+.register a { color: #60a5fa; font-weight: 600; text-decoration: none; }
+.register a:hover { text-decoration: underline; }
+
+/* === LIGHT MODE === */
+body.light {
+  background: linear-gradient(135deg, #e0f2fe, #bae6fd);
+  color: #1e3a8a;
+}
+body.light .login-card {
+  background: rgba(255, 255, 255, 0.9);
+  border: 1px solid rgba(0, 0, 0, 0.1);
+  color: #1e3a8a;
+}
+body.light .title { color: #2563eb; text-shadow: none; }
+body.light .login-form input {
+  background: rgba(0, 0, 0, 0.05);
+  color: #1e293b;
+}
+body.light .btn-login {
+  background: linear-gradient(90deg, #2563eb, #3b82f6);
+}
+body.light .options a,
+body.light .register a {
+  color: #2563eb;
+}
