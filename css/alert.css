@@ -1,0 +1,146 @@
+/* Alert Styles */
+.alert {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    min-width: 300px;
+    max-width: 500px;
+    padding: 16px 20px;
+    border-radius: 8px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    animation: slideIn 0.3s ease-out;
+    z-index: 9999;
+    font-size: 14px;
+}
+
+@keyframes slideIn {
+    from {
+        transform: translateX(400px);
+        opacity: 0;
+    }
+    to {
+        transform: translateX(0);
+        opacity: 1;
+    }
+}
+
+.alert-icon {
+    font-size: 20px;
+    font-weight: bold;
+    flex-shrink: 0;
+}
+
+.alert-message {
+    flex: 1;
+    line-height: 1.4;
+}
+
+.alert-close {
+    background: none;
+    border: none;
+    font-size: 24px;
+    cursor: pointer;
+    color: inherit;
+    opacity: 0.7;
+    padding: 0;
+    width: 24px;
+    height: 24px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: opacity 0.2s;
+}
+
+.alert-close:hover {
+    opacity: 1;
+}
+
+/* Alert Success */
+.alert-success {
+    background-color: #d4edda;
+    border-left: 4px solid #28a745;
+    color: #155724;
+}
+
+.alert-success .alert-icon {
+    color: #28a745;
+}
+
+/* Alert Error */
+.alert-error {
+    background-color: #f8d7da;
+    border-left: 4px solid #dc3545;
+    color: #721c24;
+}
+
+.alert-error .alert-icon {
+    color: #dc3545;
+}
+
+/* Alert Warning */
+.alert-warning {
+    background-color: #fff3cd;
+    border-left: 4px solid #ffc107;
+    color: #856404;
+}
+
+.alert-warning .alert-icon {
+    color: #ffc107;
+}
+
+/* Alert Info */
+.alert-info {
+    background-color: #d1ecf1;
+    border-left: 4px solid #17a2b8;
+    color: #0c5460;
+}
+
+.alert-info .alert-icon {
+    color: #17a2b8;
+}
+
+/* Dark Theme Alert */
+body.dark-theme .alert-success {
+    background-color: #1e4620;
+    color: #7ef77b;
+}
+
+body.dark-theme .alert-error {
+    background-color: #4a1e1e;
+    color: #ff8080;
+}
+
+body.dark-theme .alert-warning {
+    background-color: #4a3e1e;
+    color: #ffd966;
+}
+
+body.dark-theme .alert-info {
+    background-color: #1e3a4a;
+    color: #7dd3f0;
+}
+
+/* Auto hide animation */
+@keyframes slideOut {
+    to {
+        transform: translateX(400px);
+        opacity: 0;
+    }
+}
+
+.alert.hiding {
+    animation: slideOut 0.3s ease-out forwards;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .alert {
+        left: 20px;
+        right: 20px;
+        min-width: auto;
+        max-width: none;
+    }
+}
