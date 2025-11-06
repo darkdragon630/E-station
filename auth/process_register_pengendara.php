@@ -73,7 +73,7 @@ if ($_SERVER['REQUEST_METHOD'] == "POST") {
             $mail->isHTML(true);
             $mail->Subject = 'Verifikasi Email - Registrasi Pengendara E-Station';
             
-            // ✅ PERBAIKAN: Gunakan domain hosting dan file auth.php
+            //  PERBAIKAN: Menggunakan domain hosting dan file auth.php
             $verification_link = "https://e-station.wasmer.app/auth/verify_email.php?token=" . $verification_token . "&role=pengendara";
             
             $mail->Body = "
@@ -119,7 +119,7 @@ if ($_SERVER['REQUEST_METHOD'] == "POST") {
             
             $mail->send();
             
-            // ✅ PERBAIKAN: Redirect ke auth.php (bukan register_pengendara.php)
+            // redirect ke auth.php
             header("Location: auth.php?success=check_email");
             exit();
             
@@ -130,7 +130,7 @@ if ($_SERVER['REQUEST_METHOD'] == "POST") {
             
             error_log("Email send failed: " . $mail->ErrorInfo);
             
-            // ✅ PERBAIKAN: Redirect ke auth.php
+            // Redirect ke auth.php
             header("Location: auth.php?error=email_failed");
             exit();
         }
@@ -138,13 +138,13 @@ if ($_SERVER['REQUEST_METHOD'] == "POST") {
     } catch (PDOException $e) {
         error_log("Database error: " . $e->getMessage());
         
-        // ✅ PERBAIKAN: Redirect ke auth.php
+        // Redirect ke auth.php
         header("Location: auth.php?error=database_error");
         exit();
     }
     
 } else {
-    // ✅ PERBAIKAN: Redirect ke auth.php jika akses langsung
+    // Redirect ke auth.php jika akses langsung
     header("Location: auth.php");
     exit();
 }
