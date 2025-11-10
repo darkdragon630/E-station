@@ -27,7 +27,7 @@ if ($_SERVER['REQUEST_METHOD'] == "POST") {
         if (password_verify($password, $user['password'])) {
             // set session
             $_SESSION['user_id'] = $user['id_admin'];
-            $_SESSION['nama'] = $user['nama'];
+            $_SESSION['nama'] = $user['nama_admin'];
             $_SESSION['role'] = 'admin';
             // arahkan ke dashboard admin
             header("Location: ../admin/dashboard.php?success=login");
