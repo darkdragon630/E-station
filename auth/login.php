@@ -56,7 +56,7 @@ if (isset($_SESSION['user_id'], $_SESSION['role'])) {
   <div class="container">
     <div class="login-card">
       <h1 class="title">E-STATION</h1>
-      <p class="subtitle">(Layanan Pengisian Kendaraan Listrik)</p>
+      <p class="subtitle">Layanan Pengisian Kendaraan Listrik</p>
 
       <div class="illustration">
         <img src="../images/Logo_1.jpeg" alt="Logo E-Station">
