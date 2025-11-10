@@ -43,6 +43,21 @@ function tampilkan_alert() {
             case 'resend_verification':
                 $pesan = "Link verifikasi telah dikirim ulang ke email Anda.";
                 break;
+            case 'user_aktivated' :
+                $pesan = "Akun pengendara berhasil diaktifkan.";
+                break;
+            case 'user_deactivated':
+                $pesan = "Akun pengendara berhasil dinonaktifkan";
+                break;
+            case 'maintenance_created':
+                $pesan = "Jadwal maintenance berhasil ditambahkan!";
+                break;
+            case 'maintenance_updated':
+                $pesan = "Status maintenance berhasil diperbarui!";
+                break;
+            case 'maintenance_deleted':
+                $pesan = "Jadwal maintenance berhasil dihapus!";
+                break;
             default:
                 $pesan = ucfirst($_GET['success']) . " berhasil.";
         }
@@ -109,6 +124,24 @@ function tampilkan_alert() {
                 break;
             case 'database_error':
                 $pesan = "Terjadi kesalahan database. Silakan coba lagi.";
+                break;
+            case 'invalid_input':
+                $pesan = "Input tidak valid!";
+                break;
+            case 'invalid_request':
+                $pesan = "Request tidak valid!";
+                break;
+            case 'unknown_action':
+                $pesan = "Aksi tidak dikenali!";
+                break;
+            case 'maintenance_not_found':
+                $pesan = "Jadwal maintenance tidak ditemukan.";
+                break;
+            case 'invalid_date':
+                $pesan = "Tanggal tidak valid. Tanggal selesai harus setelah tanggal mulai.";
+                break;
+            case 'maintenance_conflict':
+                $pesan = "Sudah ada jadwal maintenance untuk stasiun ini pada waktu tersebut.";
                 break;
             default:
                 $pesan = "Terjadi kesalahan: " . htmlspecialchars($_GET['error']);

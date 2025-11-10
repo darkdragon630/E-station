@@ -1,0 +1,484 @@
+/* ===== GENERAL STYLES ===== */
+body {
+    background: linear-gradient(135deg, #a8d8ea 0%, #d4e6f1 50%, #e8f4f8 100%);
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    padding: 20px 0;
+    margin: 0;
+}
+
+/* ===== CONTAINER ===== */
+.register-container {
+    max-width: 500px;
+    width: 100%;
+    margin: 20px;
+    text-align: center;
+}
+
+/* ===== HEADER E-STATION ===== */
+.page-header {
+    margin-bottom: 20px;
+    background: rgba(255, 255, 255, 0.4);
+    -webkit-backdrop-filter: blur(10px);
+    backdrop-filter: blur(10px);
+    border-radius: 20px;
+    padding: 30px 20px 20px;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.08);
+    border: 1px solid rgba(255, 255, 255, 0.5);
+}
+
+.page-header h1 {
+    color: #1a3a52;
+    font-size: 36px;
+    font-weight: 700;
+    letter-spacing: 3px;
+    margin-bottom: 8px;
+    margin-top: 0;
+}
+
+.page-header .subtitle {
+    color: #4a5568;
+    font-size: 15px;
+    font-weight: 400;
+    margin-bottom: 20px;
+}
+
+/* ===== ILLUSTRATION ===== */
+.page-header img {
+    margin-bottom: 0;
+    padding-bottom: 20px;
+    width: 160px;
+    height: auto;
+    border-radius: 8px;
+    filter: drop-shadow(0 4px 6px rgba(0,0,0,0.1));
+}
+
+/* ===== CARD ===== */
+.card {
+    border: none;
+    border-radius: 20px;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.08);
+    background: white;
+}
+
+.card-header {
+    background: white;
+    border-bottom: none;
+    padding: 30px 30px 20px;
+    border-radius: 20px 20px 0 0;
+}
+
+.card-header h3 {
+    color: #1a3a52;
+    font-size: 26px;
+    font-weight: 700;
+    margin-bottom: 25px;
+}
+
+/* ===== TAB BUTTONS ===== */
+.tab-buttons {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 0;
+}
+
+.tab-btn {
+    flex: 1;
+    padding: 12px 16px;
+    border: 2px solid #1a3a52;
+    background: white;
+    color: #1a3a52;
+    cursor: pointer;
+    border-radius: 8px;
+    font-weight: 600;
+    transition: all 0.3s ease;
+    font-size: 15px;
+}
+
+.tab-btn:hover {
+    background: #f0f4f8;
+}
+
+.tab-btn.active {
+    background: #1a3a52;
+    color: white;
+    border-color: #1a3a52;
+}
+
+/* ===== FORM BOX ===== */
+.form-box {
+    display: none;
+    padding: 40px;
+}
+
+.form-box.active {
+    display: block;
+    animation: fadeIn 0.3s ease;
+}
+
+@keyframes fadeIn {
+    from { 
+        opacity: 0; 
+        transform: translateY(10px); 
+    }
+    to { 
+        opacity: 1; 
+        transform: translateY(0); 
+    }
+}
+
+/* ===== FORM ELEMENTS ===== */
+.form-label {
+    font-weight: 600;
+    color: #1a3a52;
+    margin-bottom: 8px;
+    font-size: 14px;
+    display: block;
+    text-align: left;
+}
+
+.form-label i {
+    color: #1a3a52;
+    margin-right: 5px;
+}
+
+.form-control {
+    border-radius: 8px;
+    padding: 12px 15px;
+    border: 1.5px solid #d1d5db;
+    transition: all 0.3s ease;
+    font-size: 14px;
+    background-color: #f9fafb;
+    width: 100%;
+    box-sizing: border-box;
+}
+
+.form-control:focus {
+    border-color: #3b82f6;
+    background-color: white;
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+    outline: none;
+}
+
+.form-control::placeholder {
+    color: #9ca3af;
+}
+
+.form-control.is-invalid {
+    border-color: #ef4444;
+    background-color: #fef2f2;
+}
+
+.form-control.is-valid {
+    border-color: #10b981;
+    background-color: #f0fdf4;
+}
+
+textarea.form-control {
+    resize: vertical;
+    min-height: 60px;
+}
+
+/* ===== VALIDATION FEEDBACK ===== */
+.invalid-feedback {
+    font-size: 12px;
+    margin-top: 5px;
+    color: #ef4444;
+    display: none;
+    text-align: left;
+}
+
+.invalid-feedback.show {
+    display: block;
+}
+
+.valid-feedback {
+    font-size: 12px;
+    margin-top: 5px;
+    color: #10b981;
+    display: none;
+    text-align: left;
+}
+
+.valid-feedback.show {
+    display: block;
+}
+
+/* ===== PASSWORD STRENGTH ===== */
+.password-strength {
+    height: 5px;
+    border-radius: 3px;
+    margin-top: 8px;
+    transition: all 0.3s;
+    background-color: #e5e7eb;
+}
+
+.strength-weak { 
+    background: #ef4444; 
+    width: 33%; 
+}
+
+.strength-medium { 
+    background: #f59e0b; 
+    width: 66%; 
+}
+
+.strength-strong { 
+    background: #10b981; 
+    width: 100%; 
+}
+
+/* ===== PASSWORD TOGGLE ===== */
+.password-toggle {
+    position: absolute;
+    right: 12px;
+    top: 50%;
+    transform: translateY(-50%);
+    cursor: pointer;
+    color: #6b7280;
+    transition: color 0.3s;
+}
+
+.password-toggle:hover {
+    color: #1a3a52;
+}
+
+/* ===== BUTTONS ===== */
+.btn-register {
+    background: linear-gradient(135deg, #3b82f6 0%, #60a5fa 100%);
+    border: none;
+    padding: 14px;
+    font-weight: 600;
+    border-radius: 10px;
+    transition: all 0.3s ease;
+    color: white;
+    font-size: 16px;
+    box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
+    width: 100%;
+    cursor: pointer;
+}
+
+.btn-register:hover:not(:disabled) {
+    background: linear-gradient(135deg, #2563eb 0%, #3b82f6 100%);
+    transform: translateY(-2px);
+    box-shadow: 0 6px 16px rgba(59, 130, 246, 0.4);
+}
+
+.btn-register:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+    transform: none;
+}
+
+/* ===== LOGIN LINK ===== */
+.login-link {
+    text-align: center;
+    margin-top: 20px;
+    color: #1a3a52;
+    font-size: 14px;
+}
+
+.login-link p {
+    margin: 0;
+}
+
+.login-link a {
+    color: #3b82f6;
+    text-decoration: none;
+    font-weight: 600;
+}
+
+.login-link a:hover {
+    text-decoration: underline;
+}
+
+/* ===== UTILITY CLASSES ===== */
+.position-relative {
+    position: relative;
+}
+
+.text-danger {
+    color: #ef4444;
+}
+
+.text-muted {
+    color: #6b7280;
+    font-size: 12px;
+}
+
+.mb-3 {
+    margin-bottom: 1rem;
+}
+
+.mb-4 {
+    margin-bottom: 1.5rem;
+}
+
+.me-1 {
+    margin-right: 0.25rem;
+}
+
+.me-2 {
+    margin-right: 0.5rem;
+}
+
+.w-100 {
+    width: 100%;
+}
+
+.p-0 {
+    padding: 0;
+}
+
+/* ===== ALERT STYLES ===== */
+.alert {
+    border-radius: 10px;
+    padding: 12px 16px;
+    margin-bottom: 20px;
+    font-size: 14px;
+}
+
+.alert-success {
+    background-color: #ecfdf5;
+    border: 1px solid #86efac;
+    color: #166534;
+}
+
+.alert-danger {
+    background-color: #fef2f2;
+    border: 1px solid #fca5a5;
+    color: #991b1b;
+}
+
+.alert-warning {
+    background-color: #fffbeb;
+    border: 1px solid #fcd34d;
+    color: #92400e;
+}
+
+.alert-info {
+    background-color: #eff6ff;
+    border: 1px solid #93c5fd;
+    color: #1e40af;
+}
+
+/* ===== RESPONSIVE DESIGN ===== */
+
+/* Tablet */
+@media (max-width: 768px) {
+    .register-container {
+        margin: 15px;
+    }
+    
+    .page-header h1 {
+        font-size: 32px;
+    }
+    
+    .illustration img {
+        width: 100px;
+    }
+    
+    .card-header {
+        padding: 25px 25px 15px;
+    }
+    
+    .card-header h3 {
+        font-size: 24px;
+    }
+    
+    .form-box {
+        padding: 25px;
+    }
+}
+
+/* Mobile */
+@media (max-width: 576px) {
+    body {
+        padding: 10px 0;
+    }
+    
+    .register-container {
+        margin: 10px;
+    }
+    
+    .page-header h1 {
+        font-size: 28px;
+        letter-spacing: 2px;
+    }
+    
+    .page-header .subtitle {
+        font-size: 13px;
+    }
+    
+    .illustration {
+        margin-bottom: 20px;
+    }
+    
+    .illustration img {
+        width: 80px;
+    }
+    
+    .card-header {
+        padding: 20px 20px 15px;
+    }
+    
+    .card-header h3 {
+        font-size: 22px;
+        margin-bottom: 20px;
+    }
+    
+    .form-box {
+        padding: 20px;
+    }
+    
+    .tab-btn {
+        font-size: 13px;
+        padding: 10px 12px;
+    }
+    
+    .tab-btn i {
+        display: none;
+    }
+    
+    .form-control {
+        font-size: 13px;
+        padding: 11px 13px;
+    }
+    
+    .btn-register {
+        font-size: 15px;
+        padding: 13px;
+    }
+    
+    .login-link {
+        font-size: 13px;
+    }
+}
+
+/* Small Mobile */
+@media (max-width: 400px) {
+    .page-header h1 {
+        font-size: 24px;
+    }
+    
+    .card-header {
+        padding: 15px 15px 12px;
+    }
+    
+    .form-box {
+        padding: 15px;
+    }
+    
+    .tab-btn {
+        font-size: 12px;
+        padding: 8px 10px;
+    }
+    
+    .form-control {
+        font-size: 12px;
+        padding: 10px 12px;
+    }
+}

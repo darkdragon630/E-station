@@ -23,158 +23,26 @@ if (isset($_SESSION['user_id'])) {
     <title>Registrasi - E-Station</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <style>
-        body {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            min-height: 100vh;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            padding: 20px 0;
-        }
-        .register-container {
-            max-width: 500px;
-            width: 100%;
-            margin: 20px;
-        }
-        .card {
-            border: none;
-            border-radius: 15px;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
-        }
-        .card-header {
-            background: white;
-            border-bottom: none;
-            padding: 30px 30px 0;
-            border-radius: 15px 15px 0 0;
-        }
-        .tab-buttons {
-            display: flex;
-            gap: 10px;
-            margin-bottom: 0;
-        }
-        .tab-btn {
-            flex: 1;
-            padding: 12px;
-            border: 2px solid #e0e0e0;
-            background: white;
-            color: #666;
-            cursor: pointer;
-            border-radius: 10px;
-            font-weight: 600;
-            transition: all 0.3s ease;
-        }
-        .tab-btn:hover {
-            border-color: #667eea;
-            color: #667eea;
-        }
-        .tab-btn.active {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-            border-color: transparent;
-        }
-        .form-box {
-            display: none;
-            padding: 30px;
-        }
-        .form-box.active {
-            display: block;
-            animation: fadeIn 0.3s ease;
-        }
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(10px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-        .form-label {
-            font-weight: 600;
-            color: #333;
-            margin-bottom: 8px;
-            font-size: 14px;
-        }
-        .form-control {
-            border-radius: 8px;
-            padding: 12px;
-            border: 2px solid #e0e0e0;
-            transition: all 0.3s ease;
-            font-size: 14px;
-        }
-        .form-control:focus {
-            border-color: #667eea;
-            box-shadow: 0 0 0 0.2rem rgba(102, 126, 234, 0.25);
-        }
-        .form-control.is-invalid {
-            border-color: #dc3545;
-        }
-        .form-control.is-valid {
-            border-color: #28a745;
-        }
-        .invalid-feedback, .valid-feedback {
-            font-size: 12px;
-            margin-top: 5px;
-        }
-        .password-strength {
-            height: 5px;
-            border-radius: 3px;
-            margin-top: 8px;
-            transition: all 0.3s;
-        }
-        .strength-weak { background: #dc3545; width: 33%; }
-        .strength-medium { background: #ffc107; width: 66%; }
-        .strength-strong { background: #28a745; width: 100%; }
-        .password-toggle {
-            position: absolute;
-            right: 12px;
-            top: 50%;
-            transform: translateY(-50%);
-            cursor: pointer;
-            color: #666;
-        }
-        .btn-register {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            border: none;
-            padding: 12px;
-            font-weight: 600;
-            border-radius: 8px;
-            transition: transform 0.2s ease;
-        }
-        .btn-register:hover:not(:disabled) {
-            transform: translateY(-2px);
-            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
-        }
-        .btn-register:disabled {
-            opacity: 0.6;
-            cursor: not-allowed;
-        }
-        .login-link {
-            text-align: center;
-            margin-top: 20px;
-            color: #666;
-        }
-        .login-link a {
-            color: #fff;
-            text-decoration: none;
-            font-weight: 600;
-        }
-        .login-link a:hover {
-            text-decoration: underline;
-        }
-        .position-relative {
-            position: relative;
-        }
-    </style>
+    <!-- CSS TERPISAH -->
+    <link rel="stylesheet" href="../css/auth.css">
+    <link rel="stylesheet" href="../css/alert.css">
+    <link rel="icon" type="image/png" href="../images/Logo_1.jpeg">
 </head>
 <body>
 
 <div class="register-container">
+    <!-- HEADER E-STATION -->
+    <!-- TAMPILKAN ALERT -->
+    <?php tampilkan_alert(); ?>
+    <div class="page-header">
+        <h1>E-STATION</h1>
+        <p class="subtitle">Layanan Pengisian Kendaraan Listrik</p>
+        <img src="../images/ev-station.jpg" alt="EV Station">
+    </div>
+
     <div class="card">
         <div class="card-header">
-            <h3 class="text-center mb-4">
-                <i class="fas fa-user-plus me-2"></i>Registrasi Akun
-            </h3>
-            
-            <!-- TAMPILKAN ALERT -->
-            <?php tampilkan_alert(); ?>
+            <h3 class="text-center mb-4">Registrasi Akun</h3>
             
             <!-- TAB BUTTONS -->
             <div class="tab-buttons">
@@ -190,16 +58,12 @@ if (isset($_SESSION['user_id'])) {
         <div class="card-body p-0">
             <!-- FORM PENGENDARA -->
             <div id="pengendara" class="form-box active">
-                <h5 class="mb-3">
-                    <i class="fas fa-motorcycle me-2 text-primary"></i>Daftar Sebagai Pengendara
-                </h5>
                 <form id="formPengendara" action="process_register_pengendara.php" method="POST" onsubmit="return validateForm('pengendara')">
                     <div class="mb-3">
                         <label class="form-label">
                             <i class="fas fa-user me-1"></i>Nama Lengkap <span class="text-danger">*</span>
                         </label>
                         <input type="text" name="nama" id="nama_pengendara" class="form-control" placeholder="Masukkan nama lengkap" required>
-                        <div class="invalid-feedback"></div>
                     </div>
                     
                     <div class="mb-3">
@@ -207,7 +71,6 @@ if (isset($_SESSION['user_id'])) {
                             <i class="fas fa-envelope me-1"></i>Email <span class="text-danger">*</span>
                         </label>
                         <input type="email" name="email" id="email_pengendara" class="form-control" placeholder="contoh@email.com" required>
-                        <div class="invalid-feedback"></div>
                         <div class="valid-feedback">Email tersedia!</div>
                     </div>
                     
@@ -215,7 +78,7 @@ if (isset($_SESSION['user_id'])) {
                         <label class="form-label">
                             <i class="fas fa-phone me-1"></i>No. Telepon
                         </label>
-                        <input type="tel" name="no_telepon" id="no_telepon_pengendara" class="form-control" placeholder="08xxxxxxxxxx" pattern="[0-9]{10,15}" maxlength="20">
+                        <input type="tel" name="no_telepon" id="no_telepon_pengendara" class="form-control" placeholder="08xxxxxxxxxx" pattern="[0-9]{10,15}" maxlength="20" oninput="validatePhone('pengendara')">
                         <div class="invalid-feedback">Format nomor telepon tidak valid (10-15 digit).</div>
                     </div>
                     
@@ -236,7 +99,6 @@ if (isset($_SESSION['user_id'])) {
                         </div>
                         <div class="password-strength" id="strength_pengendara"></div>
                         <small class="text-muted">Minimal 8 karakter.</small>
-                        <div class="invalid-feedback"></div>
                     </div>
                     
                     <div class="mb-4">
@@ -247,7 +109,7 @@ if (isset($_SESSION['user_id'])) {
                             <input type="password" name="confirm_password" id="confirm_password_pengendara" class="form-control" placeholder="Ulangi password" required oninput="checkPasswordMatch('pengendara')">
                             <i class="fas fa-eye password-toggle" onclick="togglePassword('confirm_password_pengendara')"></i>
                         </div>
-                        <div class="invalid-feedback"></div>
+                        <div class="invalid-feedback">Password tidak cocok!</div>
                         <div class="valid-feedback">Password cocok!</div>
                     </div>
                     
@@ -259,16 +121,12 @@ if (isset($_SESSION['user_id'])) {
             
             <!-- FORM MITRA -->
             <div id="mitra" class="form-box">
-                <h5 class="mb-3">
-                    <i class="fas fa-store me-2 text-primary"></i>Daftar Sebagai Mitra
-                </h5>
                 <form id="formMitra" action="process_register_mitra.php" method="POST" onsubmit="return validateForm('mitra')">
                     <div class="mb-3">
                         <label class="form-label">
                             <i class="fas fa-store me-1"></i>Nama Mitra/Usaha <span class="text-danger">*</span>
                         </label>
                         <input type="text" name="nama_mitra" id="nama_mitra" class="form-control" placeholder="Nama usaha/toko" required>
-                        <div class="invalid-feedback"></div>
                     </div>
                     
                     <div class="mb-3">
@@ -276,7 +134,6 @@ if (isset($_SESSION['user_id'])) {
                             <i class="fas fa-envelope me-1"></i>Email <span class="text-danger">*</span>
                         </label>
                         <input type="email" name="email" id="email_mitra" class="form-control" placeholder="contoh@email.com" required>
-                        <div class="invalid-feedback"></div>
                         <div class="valid-feedback">Email tersedia!</div>
                     </div>
                     
@@ -284,7 +141,7 @@ if (isset($_SESSION['user_id'])) {
                         <label class="form-label">
                             <i class="fas fa-phone me-1"></i>No. Telepon
                         </label>
-                        <input type="tel" name="no_telepon" id="no_telepon_mitra" class="form-control" placeholder="08xxxxxxxxxx" pattern="[0-9]{10,15}" maxlength="20">
+                        <input type="tel" name="no_telepon" id="no_telepon_mitra" class="form-control" placeholder="08xxxxxxxxxx" pattern="[0-9]{10,15}" maxlength="20" oninput="validatePhone('mitra')">
                         <div class="invalid-feedback">Format nomor telepon tidak valid (10-15 digit).</div>
                     </div>
                     
@@ -305,7 +162,6 @@ if (isset($_SESSION['user_id'])) {
                         </div>
                         <div class="password-strength" id="strength_mitra"></div>
                         <small class="text-muted">Minimal 8 karakter.</small>
-                        <div class="invalid-feedback"></div>
                     </div>
                     
                     <div class="mb-4">
@@ -316,7 +172,7 @@ if (isset($_SESSION['user_id'])) {
                             <input type="password" name="confirm_password" id="confirm_password_mitra" class="form-control" placeholder="Ulangi password" required oninput="checkPasswordMatch('mitra')">
                             <i class="fas fa-eye password-toggle" onclick="togglePassword('confirm_password_mitra')"></i>
                         </div>
-                        <div class="invalid-feedback"></div>
+                        <div class="invalid-feedback">Password tidak cocok!</div>
                         <div class="valid-feedback">Password cocok!</div>
                     </div>
                     
@@ -329,7 +185,7 @@ if (isset($_SESSION['user_id'])) {
     </div>
     
     <div class="login-link">
-        <p class="text-white">Sudah punya akun? <a href="login.php">Login di sini</a></p>
+        <p>Sudah punya akun? <a href="login.php">Masuk di sini</a></p>
     </div>
 </div>
 
@@ -365,10 +221,39 @@ function togglePassword(fieldId) {
     }
 }
 
+// Validate Phone Number
+function validatePhone(type) {
+    const phoneField = document.getElementById('no_telepon_' + type);
+    const feedback = phoneField.nextElementSibling;
+    const phoneValue = phoneField.value;
+    
+    if (phoneValue === '') {
+        phoneField.classList.remove('is-valid', 'is-invalid');
+        if (feedback) feedback.classList.remove('show');
+        return;
+    }
+    
+    // Check if phone number is valid (10-15 digits)
+    if (/^[0-9]{10,15}$/.test(phoneValue)) {
+        phoneField.classList.remove('is-invalid');
+        phoneField.classList.add('is-valid');
+        if (feedback) feedback.classList.remove('show');
+    } else {
+        phoneField.classList.remove('is-valid');
+        phoneField.classList.add('is-invalid');
+        if (feedback) feedback.classList.add('show');
+    }
+}
+
 // Check Password Strength
 function checkPasswordStrength(field, type) {
     const password = field.value;
     const strengthBar = document.getElementById('strength_' + type);
+    
+    if (password.length === 0) {
+        strengthBar.className = 'password-strength';
+        return;
+    }
     
     let strength = 0;
     if (password.length >= 8) strength++;
@@ -387,27 +272,33 @@ function checkPasswordStrength(field, type) {
     }
 }
 
-// Check Password Match
+// Check Password Match - DIPERBAIKI AGAR DINAMIS
 function checkPasswordMatch(type) {
     const password = document.getElementById('password_' + type).value;
     const confirmPassword = document.getElementById('confirm_password_' + type).value;
     const confirmField = document.getElementById('confirm_password_' + type);
+    const invalidFeedback = confirmField.parentElement.nextElementSibling;
+    const validFeedback = invalidFeedback ? invalidFeedback.nextElementSibling : null;
     
+    // Jika field kosong, reset validasi
     if (confirmPassword === '') {
         confirmField.classList.remove('is-valid', 'is-invalid');
+        if (invalidFeedback) invalidFeedback.classList.remove('show');
+        if (validFeedback) validFeedback.classList.remove('show');
         return;
     }
     
-    if (password === confirmPassword) {
+    // Cek apakah password cocok
+    if (password === confirmPassword && password !== '') {
         confirmField.classList.remove('is-invalid');
         confirmField.classList.add('is-valid');
+        if (invalidFeedback) invalidFeedback.classList.remove('show');
+        if (validFeedback) validFeedback.classList.add('show');
     } else {
         confirmField.classList.remove('is-valid');
         confirmField.classList.add('is-invalid');
-        const feedback = confirmField.parentElement.nextElementSibling;
-        if (feedback && feedback.classList.contains('invalid-feedback')) {
-            feedback.textContent = 'Password tidak cocok!';
-        }
+        if (invalidFeedback) invalidFeedback.classList.add('show');
+        if (validFeedback) validFeedback.classList.remove('show');
     }
 }
 
