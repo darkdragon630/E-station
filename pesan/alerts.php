@@ -89,6 +89,12 @@ function tampilkan_alert() {
             case 'email_exists':
                 $pesan = "Email sudah terdaftar.";
                 break;
+            case 'nama_mitra_exists':
+                $pesan = "Nama mitra sudah ada silahkan masukan nama mitra anda yang benar";
+                break;
+            case 'nama_pengendara_exists':
+                $pesan = "Nama pengendara sudah ada silahkan masukan nama pengendara yang benar";
+                break;
             case 'invalid_email':
                 $pesan = "Format email tidak valid.";
                 break;
@@ -109,6 +115,15 @@ function tampilkan_alert() {
                 break;
             case 'email_not_verified':
                 $pesan = "Email belum diverifikasi. silahkan cek inbox email Anda.";
+                break;
+            case 'account_pending':
+                $pesan = "Akun Anda masih dalam proses verifikasi oleh admin. Mohon tunggu konfirmasi melalui email.";
+                break;
+            case 'account_rejected':
+                $pesan = "Pendaftaran Anda telah ditolak oleh admin. Silakan hubungi admin untuk informasi lebih lanjut.";
+                break;
+            case 'account_inactive':
+                $pesan = "Akun Anda sedang tidak aktif. Silakan hubungi admin.";
                 break;
             case 'email_failed':
                 $pesan = "Gagal mengirim email verifikasi. silahkan coba lagi.";

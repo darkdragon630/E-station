@@ -1,0 +1,189 @@
+:root{
+  --bg:#0f2746;
+  --accent1: linear-gradient(135deg,#7b61ff,#ff6b9a);
+  --accent2: linear-gradient(135deg,#ff7aa2,#ffb166);
+  --accent3: linear-gradient(135deg,#44d8ff,#5ee6c8);
+  --accent4: linear-gradient(135deg,#31d28a,#2bd6ff);
+  --muted: rgba(255,255,255,0.65);
+  --panel-bg: rgba(255,255,255,0.03);
+  --border: 1px solid rgba(255,255,255,0.05);
+  --shadow: 0 12px 30px rgba(8,20,40,0.6);
+  --radius: 16px;
+}
+
+body{
+  margin:0;
+  font-family:'Poppins', sans-serif;
+  background: var(--bg);
+  color:#eaf2ff;
+}
+
+/* Container */
+.container{
+  width: min(1200px, 94%);
+  margin: 40px auto;
+}
+
+/* Header */
+.topbar{
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  padding:20px;
+  border-radius:var(--radius);
+  background: var(--panel-bg);
+  box-shadow: var(--shadow);
+}
+.brand{
+  display:flex;
+  align-items:center;
+  gap:10px;
+}
+.logo{
+  background:linear-gradient(135deg,#ff5d73,#ffb86b);
+  padding:8px 10px;
+  border-radius:8px;
+  font-weight:800;
+  color:white;
+}
+.subtitle{font-size:12px;color:var(--muted);}
+.topnav{
+  display:flex;
+  gap:20px;
+  align-items:center;
+}
+.topnav a{
+  color:var(--muted);
+  text-decoration:none;
+  font-weight:600;
+  font-size:14px;
+}
+.moon{
+  background: radial-gradient(circle at 30% 30%, #ffd97a, #ffb86b);
+  border-radius:50%;
+  width:36px;
+  height:36px;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+}
+
+/* Hero */
+.greeting h2{
+  margin:0;
+  font-size:36px;
+  background: linear-gradient(90deg,#b98cff,#ff6fa6);
+  -webkit-background-clip:text;
+  color:transparent;
+}
+.greeting p{
+  color:var(--muted);
+  margin-top:6px;
+}
+.stats{
+  display:grid;
+  grid-template-columns:repeat(4,1fr);
+  gap:20px;
+  margin-top:20px;
+}
+.card{
+  border-radius:var(--radius);
+  padding:24px;
+  color:white;
+}
+.c1{background:var(--accent1);}
+.c2{background:var(--accent2);}
+.c3{background:var(--accent3);}
+.c4{background:var(--accent4);}
+.value{font-size:28px;font-weight:700;}
+.label{font-size:14px;}
+
+/* Panel */
+.panel{
+  margin-top:30px;
+  padding:20px;
+  border-radius:var(--radius);
+  background:var(--panel-bg);
+  box-shadow: var(--shadow);
+  border:var(--border);
+}
+.panel h3{margin-bottom:14px;}
+
+.quick-grid{
+  display:grid;
+  grid-template-columns:repeat(4,1fr);
+  gap:16px;
+}
+.quick{
+  border-radius:12px;
+  padding:18px;
+  text-align:center;
+  color:#042a2b;
+  font-weight:700;
+}
+.small1{background:linear-gradient(135deg,#7b61ff,#9b8aff);color:white;}
+.small2{background:linear-gradient(135deg,#2fe7a9,#9ef0ff);}
+.small3{background:linear-gradient(135deg,#56c0ff,#67ffd7);}
+.small4{background:linear-gradient(135deg,#ff8ab3,#ffc9b3);}
+.quick small{display:block;font-weight:500;}
+
+.three-cards{
+  display:grid;
+  grid-template-columns:repeat(3,1fr);
+  gap:18px;
+  margin-top:20px;
+}
+.glass-card{
+  border-radius:var(--radius);
+  background:var(--panel-bg);
+  border:var(--border);
+  padding:20px;
+  color:var(--muted);
+}
+.glass-card h3{color:#cfe6ff;}
+.btn-add{
+  display:inline-block;
+  margin-top:12px;
+  background:linear-gradient(90deg,#2d9cff,#6bd7ff);
+  padding:8px 12px;
+  border-radius:8px;
+  color:#041c2b;
+  font-weight:700;
+  text-decoration:none;
+}
+
+/* Tips */
+.tips{
+  margin-top:24px;
+  padding:20px;
+  border-radius:var(--radius);
+  background:var(--panel-bg);
+  display:flex;
+  gap:20px;
+}
+.tips .title h4{margin:0;color:white;}
+.tips .list{
+  display:grid;
+  grid-template-columns:repeat(3,1fr);
+  gap:18px;
+  width:100%;
+}
+.tip{
+  background:rgba(255,255,255,0.02);
+  padding:16px;
+  border-radius:12px;
+}
+.tip h5{margin:0 0 6px 0;color:#dff2ff;}
+.tip p{margin:0;font-size:13px;color:rgba(255,255,255,0.7);}
+
+/* Responsive */
+@media(max-width:1024px){
+  .stats{grid-template-columns:repeat(2,1fr);}
+  .quick-grid{grid-template-columns:repeat(2,1fr);}
+  .three-cards{grid-template-columns:1fr;}
+  .tips .list{grid-template-columns:1fr;}
+}
+@media(max-width:640px){
+  .stats{grid-template-columns:1fr;}
+  .greeting h2{font-size:28px;}
+}

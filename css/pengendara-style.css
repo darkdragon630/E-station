@@ -66,6 +66,8 @@
         border-bottom: 1px solid rgba(96, 165, 250, 0.2);
         box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
         padding: 1rem 0;
+        position: relative;
+        z-index: 100;
     }
 
     .navbar-brand {
@@ -89,6 +91,7 @@
         border-radius: 10px;
         transition: all 0.3s ease;
         position: relative;
+        z-index: 10;
     }
 
     .nav-link::after {
@@ -161,6 +164,7 @@
         box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
         position: relative;
         overflow: hidden;
+        z-index: 1;
     }
 
     .card::before {
@@ -173,6 +177,7 @@
         background: linear-gradient(135deg, rgba(96, 165, 250, 0.1), transparent);
         opacity: 0;
         transition: opacity 0.4s ease;
+        z-index: -1;
     }
 
     .card:hover {
@@ -228,6 +233,26 @@
     .card ul li strong {
         color: #60a5fa;
         font-weight: 700;
+    }
+
+    /* Fix button z-index for desktop */
+    .btn, .btn-primary, .btn-success, .btn-info, .btn-warning, 
+    .btn-outline-primary, .btn-sm {
+        position: relative;
+        z-index: 10;
+        cursor: pointer;
+        pointer-events: auto;
+    }
+
+    .card .btn {
+        z-index: 20;
+    }
+
+    /* Make links clickable */
+    a {
+        position: relative;
+        z-index: 10;
+        pointer-events: auto;
     }
 
     .bottom-nav {
@@ -313,7 +338,7 @@
     body {
         background: #0f172a;
         color: #e2e8f0;
-        padding-bottom: 80px;
+        padding-bottom: 85px; /* Space for bottom nav */
         overflow-x: hidden;
     }
 
@@ -616,21 +641,23 @@
         gap: 8px;
     }
 
-    /* Bottom Navigation */
+    /* Bottom Navigation - Fixed like Android */
     .bottom-nav {
         position: fixed;
         bottom: 0;
         left: 0;
         right: 0;
-        background: linear-gradient(180deg, rgba(15, 23, 42, 0.95), rgba(15, 23, 42, 0.98));
+        background: linear-gradient(180deg, rgba(15, 23, 42, 0.98), rgba(15, 23, 42, 1));
         backdrop-filter: blur(20px);
         border-top: 1px solid rgba(96, 165, 250, 0.2);
         display: flex;
         justify-content: space-around;
         align-items: center;
-        padding: 12px 0 16px;
-        box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.3);
+        padding: 10px 0 20px; /* Extra bottom padding for gesture area */
+        box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.4);
         z-index: 1000;
+        /* Support for notch/home indicator */
+        padding-bottom: max(20px, env(safe-area-inset-bottom));
     }
 
     .bottom-nav a {
@@ -642,8 +669,10 @@
         text-decoration: none;
         padding: 8px 12px;
         border-radius: 12px;
-        transition: all 0.3s ease;
-        min-width: 70px;
+        transition: all 0.2s ease;
+        min-width: 60px;
+        flex: 1;
+        max-width: 80px;
     }
 
     .bottom-nav a:active {
@@ -657,7 +686,12 @@
     }
 
     .bottom-nav a i {
-        font-size: 1.4rem;
+        font-size: 1.3rem;
+        transition: transform 0.2s ease;
+    }
+
+    .bottom-nav a.active i {
+        transform: scale(1.1);
     }
 
     .bottom-nav a span {
@@ -665,7 +699,7 @@
         font-weight: 600;
     }
 
-    /* Hide desktop elements */
+    /* Hide desktop elements on mobile */
     .d-none.d-md-block {
         display: none !important;
     }

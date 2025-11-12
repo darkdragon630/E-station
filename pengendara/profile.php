@@ -1,4 +1,5 @@
 <?php
+/// versi 1 profile
 session_start();
 require_once '../config/koneksi.php';
 require_once '../pesan/alerts.php';

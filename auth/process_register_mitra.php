@@ -1,12 +1,7 @@
 <?php
 session_start();
 require_once "../config/koneksi.php";
-
-// Import PHPMailer
-require_once '../vendor/autoload.php';
-
-use PHPMailer\PHPMailer\PHPMailer;
-use PHPMailer\PHPMailer\Exception;
+require_once "send_verification_email.php";
 
 if ($_SERVER['REQUEST_METHOD'] == "POST") {
     $nama = trim($_POST['nama_mitra']);
@@ -42,92 +37,37 @@ if ($_SERVER['REQUEST_METHOD'] == "POST") {
             header("Location: auth.php?error=email_exists");
             exit();
         }
+
+        // cek nama mitra sudah terdaftar atau belum
+        $stmt = $koneksi->prepare("SELECT * FROM mitra WHERE nama_mitra = ?");
+        $stmt->execute([$nama]);
         
-        // Insert ke database dengan email_terverifikasi = 0
-        $stmt = $koneksi->prepare("INSERT INTO mitra (nama_mitra, email, password, no_telepon, alamat, email_terverifikasi, verifikasi_token) VALUES (?, ?, ?, ?, ?, 0, ?)");
+        if ($stmt->rowCount() > 0) {
+            header("Location: auth.php?error=nama_mitra_exists");
+            exit();
+        }
+        
+        // ✅ PERBAIKAN: Tambahkan kolom status dengan nilai 'pending'
+        $stmt = $koneksi->prepare("
+            INSERT INTO mitra 
+            (nama_mitra, email, password, no_telepon, alamat, status, email_terverifikasi, verifikasi_token, token_created_at) 
+            VALUES (?, ?, ?, ?, ?, 'pending', 0, ?, NOW())
+        ");
         $stmt->execute([$nama, $email, $hashed_password, $no_telepon, $alamat, $verification_token]);
         
         $user_id = $koneksi->lastInsertId();
         
         // ===== KIRIM EMAIL VERIFIKASI =====
-        $mail = new PHPMailer(true);
+        $email_sent = sendVerificationEmail($email, $nama, $verification_token, 'mitra');
         
-        try {
-            // Konfigurasi SMTP
-            $mail->isSMTP();
-            $mail->Host = 'smtp.gmail.com';
-            $mail->SMTPAuth = true;
-            $mail->Username = 'luminark.dev@gmail.com'; 
-            $mail->Password = 'kwlz veim ywyp urqw'; 
-            $mail->SMTPSecure = PHPMailer::ENCRYPTION_STARTTLS;
-            $mail->Port = 587;
-            
-            // Set charset UTF-8
-            $mail->CharSet = 'UTF-8';
-            
-            // Pengirim dan penerima
-            $mail->setFrom('luminark.dev@gmail.com', 'E-Station'); 
-            $mail->addAddress($email, $nama);
-            
-            // Konten email
-            $mail->isHTML(true);
-            $mail->Subject = 'Verifikasi Email - Registrasi Mitra E-Station';
-            
-            // Link verifikasi
-            $verification_link = "https://e-station.wasmer.app/auth/verify_email.php?token=" . $verification_token . "&role=mitra";
-            
-            $mail->Body = "
-                <!DOCTYPE html>
-                <html>
-                <head>
-                    <style>
-                        body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; }
-                        .container { max-width: 600px; margin: 0 auto; padding: 20px; }
-                        .header { background: #4CAF50; color: white; padding: 20px; text-align: center; }
-                        .content { background: #f9f9f9; padding: 30px; border: 1px solid #ddd; }
-                        .button { display: inline-block; background: #4CAF50; color: white; padding: 12px 30px; text-decoration: none; border-radius: 5px; margin: 20px 0; }
-                        .footer { text-align: center; padding: 20px; color: #777; font-size: 12px; }
-                    </style>
-                </head>
-                <body>
-                    <div class='container'>
-                        <div class='header'>
-                            <h1>Verifikasi Email Anda</h1>
-                        </div>
-                        <div class='content'>
-                            <h2>Halo, {$nama}!</h2>
-                            <p>Terima kasih telah mendaftar sebagai <strong>Mitra E-Station</strong>.</p>
-                            <p>Untuk menyelesaikan pendaftaran, silakan klik tombol di bawah untuk memverifikasi email Anda:</p>
-                            <p style='text-align: center;'>
-                                <a href='{$verification_link}' class='button'>Verifikasi Email Saya</a>
-                            </p>
-                            <p>Atau copy link berikut ke browser Anda:</p>
-                            <p style='word-break: break-all; background: #fff; padding: 10px; border: 1px solid #ddd;'>{$verification_link}</p>
-                            <p><strong>Link ini berlaku selama 24 jam.</strong></p>
-                            <hr>
-                            <p style='color: #777; font-size: 14px;'>Jika Anda tidak merasa mendaftar, abaikan email ini.</p>
-                        </div>
-                        <div class='footer'>
-                            <p>&copy; 2024 E-Station. All rights reserved.</p>
-                        </div>
-                    </div>
-                </body>
-                </html>
-            ";
-            
-            $mail->AltBody = "Halo {$nama},\n\nTerima kasih telah mendaftar sebagai Mitra E-Station.\nSilakan verifikasi email Anda dengan mengunjungi link berikut:\n\n{$verification_link}\n\nLink berlaku selama 24 jam.";
-            
-            $mail->send();
-            
+        if ($email_sent) {
+            // Email berhasil dikirim
             header("Location: auth.php?success=check_email");
             exit();
-            
-        } catch (Exception $e) {
+        } else {
             // Jika gagal kirim email, hapus mitra dari database
             $stmt = $koneksi->prepare("DELETE FROM mitra WHERE id_mitra = ?");
             $stmt->execute([$user_id]);
-            
-            error_log("Email send failed: " . $mail->ErrorInfo);
             
             header("Location: auth.php?error=email_failed");
             exit();
@@ -135,7 +75,6 @@ if ($_SERVER['REQUEST_METHOD'] == "POST") {
         
     } catch (PDOException $e) {
         error_log("Database error: " . $e->getMessage());
-        
         header("Location: auth.php?error=database_error");
         exit();
     }

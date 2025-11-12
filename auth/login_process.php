@@ -66,11 +66,30 @@ if ($_SERVER['REQUEST_METHOD'] == "POST") {
         $user = $stmt->fetch(PDO::FETCH_ASSOC);
         // verifikasi password
         if (password_verify($password, $user['password'])) {
-            // cek apakah email sudah diverifikasi
+            // ✅ PERBAIKAN: CEK EMAIL TERVERIFIKASI
             if (isset($user['email_terverifikasi']) && $user['email_terverifikasi'] == 0) {
                 header("Location: login.php?error=email_not_verified");
                 exit();
             }
+            
+            // ✅ PERBAIKAN: CEK STATUS AKUN MITRA
+            if (isset($user['status'])) {
+                if ($user['status'] == 'pending') {
+                    header("Location: login.php?error=account_pending");
+                    exit();
+                }
+                
+                if ($user['status'] == 'ditolak') {
+                    header("Location: login.php?error=account_rejected");
+                    exit();
+                }
+                
+                if ($user['status'] != 'disetujui') {
+                    header("Location: login.php?error=account_inactive");
+                    exit();
+                }
+            }
+            
             // set session
             $_SESSION['user_id'] = $user['id_mitra'];
             $_SESSION['nama'] = $user['nama_mitra'];
