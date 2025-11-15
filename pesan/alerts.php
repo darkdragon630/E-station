@@ -22,6 +22,9 @@ function tampilkan_alert() {
             case 'update_profile':
                 $pesan = "Profil berhasil diperbarui.";
                 break;
+            case 'foto_uploaded':
+                $pesan = "Foto profil berhasil diupload!";
+                break;
             case 'change_password':
                 $pesan = "Kata sandi berhasil diubah.";
                 break;
@@ -157,6 +160,18 @@ function tampilkan_alert() {
                 break;
             case 'maintenance_conflict':
                 $pesan = "Sudah ada jadwal maintenance untuk stasiun ini pada waktu tersebut.";
+                break;
+            case 'foto_error':
+                $pesan = "Gagal memproses gambar!";
+                break;
+            case 'table_error':
+                $pesan = "Tabel foto_profil belum dibuat!";
+                break;
+            case 'save_error':
+                $pesan = "Gagal menyimpan foto ke database.";
+                break;
+            case 'invalid_file':
+                $pesan = "File tidak valid! Hanya JPG, PNG, GIF (Max 2MB)";
                 break;
             default:
                 $pesan = "Terjadi kesalahan: " . htmlspecialchars($_GET['error']);

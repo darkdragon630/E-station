@@ -55,6 +55,8 @@ try {
     <title>Riwayat Transaksi - E-Station</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="../css/pengendara-style.css">
+    <link rel="stylesheet" href="../css/alert.css">
     
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700;800&display=swap');
@@ -126,89 +128,6 @@ body::before {
 .container {
     position: relative;
     z-index: 1;
-}
-
-/* === NAVBAR === */
-.navbar {
-    background: rgba(15, 23, 42, 0.85) !important;
-    backdrop-filter: blur(20px);
-    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
-    position: sticky;
-    top: 0;
-    z-index: 1000;
-}
-
-.navbar-brand {
-    color: #e2e8f0 !important;
-    font-weight: 800;
-    font-size: 1.5rem;
-    text-shadow: 0 0 20px rgba(96, 165, 250, 0.5);
-    transition: all 0.3s ease;
-}
-
-.navbar-brand:hover {
-    transform: scale(1.05);
-    text-shadow: 0 0 30px rgba(96, 165, 250, 0.8);
-}
-
-.nav-link {
-    color: #cbd5e1 !important;
-    font-weight: 500;
-    margin: 0 10px;
-    transition: all 0.3s ease;
-    position: relative;
-}
-
-.nav-link::after {
-    content: '';
-    position: absolute;
-    bottom: 0;
-    left: 50%;
-    width: 0;
-    height: 2px;
-    background: linear-gradient(90deg, #60a5fa, #a855f7);
-    transition: all 0.3s ease;
-    transform: translateX(-50%);
-}
-
-.nav-link:hover {
-    color: #60a5fa !important;
-    transform: translateY(-2px);
-}
-
-.nav-link:hover::after {
-    width: 100%;
-}
-
-/* === THEME TOGGLE === */
-.theme-toggle {
-    position: fixed;
-    top: 80px;
-    right: 20px;
-    z-index: 1001;
-}
-
-.theme-toggle button {
-    background: rgba(255, 255, 255, 0.1);
-    backdrop-filter: blur(10px);
-    border: 2px solid rgba(255, 255, 255, 0.2);
-    border-radius: 50%;
-    width: 55px;
-    height: 55px;
-    font-size: 1.8rem;
-    cursor: pointer;
-    transition: all 0.4s cubic-bezier(0.68, -0.55, 0.265, 1.55);
-    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.3);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-}
-
-.theme-toggle button:hover {
-    transform: rotate(180deg) scale(1.1);
-    box-shadow: 0 12px 30px rgba(96, 165, 250, 0.4);
-    background: rgba(96, 165, 250, 0.2);
 }
 
 /* === HEADER === */
@@ -474,25 +393,6 @@ body.light::before {
         radial-gradient(circle at 80% 80%, rgba(168, 85, 247, 0.05) 0%, transparent 50%);
 }
 
-body.light .navbar {
-    background: rgba(255, 255, 255, 0.9) !important;
-    border-bottom: 1px solid rgba(0, 0, 0, 0.1);
-}
-
-body.light .navbar-brand,
-body.light .nav-link {
-    color: #1e293b !important;
-}
-
-body.light .nav-link:hover {
-    color: #3b82f6 !important;
-}
-
-body.light .theme-toggle button {
-    background: rgba(0, 0, 0, 0.08);
-    border-color: rgba(0, 0, 0, 0.1);
-}
-
 body.light .stat-card {
     background: rgba(255, 255, 255, 0.9);
     border: 1px solid rgba(0, 0, 0, 0.1);
@@ -604,34 +504,37 @@ body.light .empty-state h3 {
 </style>
 </head>
 <body>
-    <!-- THEME TOGGLE -->
+    <!-- DESKTOP THEME TOGGLE -->
     <div class="theme-toggle">
         <button id="toggleTheme" aria-label="Ganti Tema">🌙</button>
     </div>
 
-    <!-- NAVBAR -->
-    <nav class="navbar navbar-expand-lg">
-        <div class="container">
-            <a class="navbar-brand" href="dashboard.php">⚡ E-Station</a>
-            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
-                <span class="navbar-toggler-icon"></span>
-            </button>
-            <div class="collapse navbar-collapse justify-content-end" id="navbarNav">
-                <div class="navbar-nav">
-                    <a class="nav-link" href="dashboard.php"><i class="fas fa-home me-1"></i> Dashboard</a>
-                    <a class="nav-link" href="search_location.php"><i class="fas fa-map-marked-alt me-1"></i> Cari Lokasi</a>
-                    <a class="nav-link" href="battery_stock.php"><i class="fas fa-battery-full me-1"></i> Stok Baterai</a>
-                    <a class="nav-link" href="../auth/logout.php"><i class="fas fa-sign-out-alt me-1"></i> Logout</a>
-                </div>
+    <!-- DESKTOP NAVBAR - Reusable Component -->
+    <?php include '../components/navbar-pengendara.php'; ?>
+
+    <!-- MOBILE HEADER -->
+    <div class="mobile-header d-md-none">
+        <div class="header-top">
+            <div class="logo">
+                <i class="fas fa-bolt"></i>
+                E-Station
+            </div>
+            <div class="header-actions">
+                <button id="mobileThemeToggle">🌙</button>
             </div>
         </div>
-    </nav>
+        <div class="welcome-text">
+            <h2>📊 Riwayat Transaksi</h2>
+            <p>Lihat semua transaksi pengisian baterai</p>
+        </div>
+    </div>
 
     <!-- MAIN CONTENT -->
-    <div class="container mt-5 mb-5">
+    <div class="container mt-md-5 mb-5">
         <?php tampilkan_alert(); ?>
-        <!-- HEADER -->
-        <div class="page-header">
+        
+        <!-- DESKTOP HEADER -->
+        <div class="page-header d-none d-md-block">
             <h1><i class="fas fa-receipt me-3"></i>Riwayat Transaksi</h1>
             <p>Lihat semua transaksi pengisian baterai Anda</p>
         </div>
@@ -739,30 +642,50 @@ body.light .empty-state h3 {
         </div>
     </div>
 
+    <!-- BOTTOM NAVIGATION (MOBILE) -->
+    <?php include '../components/bottom-nav.php'; ?>
+
     <!-- SCRIPTS -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="../js/clean-url.js"></script>
     <script>
-        // THEME TOGGLE
-        const themeBtn = document.getElementById('toggleTheme');
-        const savedTheme = localStorage.getItem('theme');
-        
-        if (savedTheme === 'light') {
-            document.body.classList.add('light');
-            themeBtn.textContent = '☀️';
-        } else {
-            themeBtn.textContent = '🌙';
-        }
-        
-        themeBtn.addEventListener('click', () => {
-            document.body.classList.toggle('light');
-            if (document.body.classList.contains('light')) {
-                localStorage.setItem('theme', 'light');
-                themeBtn.textContent = '☀️';
+        // Desktop Theme Toggle
+        const toggleButton = document.getElementById("toggleTheme");
+        if (toggleButton) {
+            const savedTheme = localStorage.getItem("theme");
+            if (savedTheme === "light") {
+                document.body.classList.add("light");
+                toggleButton.textContent = "☀️";
             } else {
-                localStorage.setItem('theme', 'dark');
-                themeBtn.textContent = '🌙';
+                toggleButton.textContent = "🌙";
             }
-        });
+
+            toggleButton.addEventListener("click", () => {
+                document.body.classList.toggle("light");
+                const isLight = document.body.classList.contains("light");
+                toggleButton.textContent = isLight ? "☀️" : "🌙";
+                localStorage.setItem("theme", isLight ? "light" : "dark");
+            });
+        }
+
+        // Mobile Theme Toggle
+        const mobileToggleButton = document.getElementById("mobileThemeToggle");
+        if (mobileToggleButton) {
+            const savedTheme = localStorage.getItem("theme");
+            if (savedTheme === "light") {
+                document.body.classList.add("light");
+                mobileToggleButton.textContent = "☀️";
+            } else {
+                mobileToggleButton.textContent = "🌙";
+            }
+
+            mobileToggleButton.addEventListener("click", () => {
+                document.body.classList.toggle("light");
+                const isLight = document.body.classList.contains("light");
+                mobileToggleButton.textContent = isLight ? "☀️" : "🌙";
+                localStorage.setItem("theme", isLight ? "light" : "dark");
+            });
+        }
 
         // SEARCH FUNCTIONALITY
         const searchInput = document.getElementById('searchInput');
@@ -809,6 +732,16 @@ body.light .empty-state h3 {
         if (searchInput) searchInput.addEventListener('keyup', filterTable);
         if (statusFilter) statusFilter.addEventListener('change', filterTable);
         if (dateFilter) dateFilter.addEventListener('change', filterTable);
+
+        // Prevent zoom on double tap (iOS)
+        let lastTouchEnd = 0;
+        document.addEventListener('touchend', function (event) {
+            const now = (new Date()).getTime();
+            if (now - lastTouchEnd <= 300) {
+                event.preventDefault();
+            }
+            lastTouchEnd = now;
+        }, false);
     </script>
 </body>
 </html>

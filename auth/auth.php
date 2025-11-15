@@ -19,11 +19,10 @@ if (isset($_SESSION['user_id'])) {
 <html lang="id">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scalable=1.0, user-scalable=no">
     <title>Registrasi - E-Station</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <!-- CSS TERPISAH -->
     <link rel="stylesheet" href="../css/auth.css">
     <link rel="stylesheet" href="../css/alert.css">
     <link rel="icon" type="image/png" href="../images/Logo_1.jpeg">
@@ -31,9 +30,8 @@ if (isset($_SESSION['user_id'])) {
 <body>
 
 <div class="register-container">
-    <!-- HEADER E-STATION -->
-    <!-- TAMPILKAN ALERT -->
     <?php tampilkan_alert(); ?>
+    
     <div class="page-header">
         <h1>E-STATION</h1>
         <p class="subtitle">Layanan Pengisian Kendaraan Listrik</p>
@@ -44,7 +42,6 @@ if (isset($_SESSION['user_id'])) {
         <div class="card-header">
             <h3 class="text-center mb-4">Registrasi Akun</h3>
             
-            <!-- TAB BUTTONS -->
             <div class="tab-buttons">
                 <button class="tab-btn active" onclick="switchTab('pengendara')">
                     <i class="fas fa-motorcycle me-2"></i>Pengendara
@@ -71,7 +68,6 @@ if (isset($_SESSION['user_id'])) {
                             <i class="fas fa-envelope me-1"></i>Email <span class="text-danger">*</span>
                         </label>
                         <input type="email" name="email" id="email_pengendara" class="form-control" placeholder="contoh@email.com" required>
-                        <div class="valid-feedback">Email tersedia!</div>
                     </div>
                     
                     <div class="mb-3">
@@ -93,19 +89,38 @@ if (isset($_SESSION['user_id'])) {
                         <label class="form-label">
                             <i class="fas fa-lock me-1"></i>Password <span class="text-danger">*</span>
                         </label>
-                        <div class="position-relative">
+                        <div class="password-input-wrapper">
                             <input type="password" name="password" id="password_pengendara" class="form-control" placeholder="Minimal 8 karakter" required minlength="8" oninput="checkPasswordStrength(this, 'pengendara')">
                             <i class="fas fa-eye password-toggle" onclick="togglePassword('password_pengendara')"></i>
                         </div>
                         <div class="password-strength" id="strength_pengendara"></div>
-                        <small class="text-muted">Minimal 8 karakter.</small>
+                        
+                        <!-- Password Requirements -->
+                        <div class="password-requirements" id="requirements_pengendara">
+                            <small class="text-muted d-block mb-1">Password harus mengandung:</small>
+                            <small class="requirement" id="req_length_pengendara">
+                                <i class="fas fa-circle"></i> Minimal 8 karakter
+                            </small>
+                            <small class="requirement" id="req_lowercase_pengendara">
+                                <i class="fas fa-circle"></i> Huruf kecil (a-z)
+                            </small>
+                            <small class="requirement" id="req_uppercase_pengendara">
+                                <i class="fas fa-circle"></i> Huruf besar (A-Z)
+                            </small>
+                            <small class="requirement" id="req_number_pengendara">
+                                <i class="fas fa-circle"></i> Angka (0-9)
+                            </small>
+                            <small class="requirement" id="req_special_pengendara">
+                                <i class="fas fa-circle"></i> Simbol (!@#$%^&*)
+                            </small>
+                        </div>
                     </div>
                     
                     <div class="mb-4">
                         <label class="form-label">
                             <i class="fas fa-lock me-1"></i>Konfirmasi Password <span class="text-danger">*</span>
                         </label>
-                        <div class="position-relative">
+                        <div class="password-input-wrapper">
                             <input type="password" name="confirm_password" id="confirm_password_pengendara" class="form-control" placeholder="Ulangi password" required oninput="checkPasswordMatch('pengendara')">
                             <i class="fas fa-eye password-toggle" onclick="togglePassword('confirm_password_pengendara')"></i>
                         </div>
@@ -134,7 +149,6 @@ if (isset($_SESSION['user_id'])) {
                             <i class="fas fa-envelope me-1"></i>Email <span class="text-danger">*</span>
                         </label>
                         <input type="email" name="email" id="email_mitra" class="form-control" placeholder="contoh@email.com" required>
-                        <div class="valid-feedback">Email tersedia!</div>
                     </div>
                     
                     <div class="mb-3">
@@ -156,19 +170,38 @@ if (isset($_SESSION['user_id'])) {
                         <label class="form-label">
                             <i class="fas fa-lock me-1"></i>Password <span class="text-danger">*</span>
                         </label>
-                        <div class="position-relative">
+                        <div class="password-input-wrapper">
                             <input type="password" name="password" id="password_mitra" class="form-control" placeholder="Minimal 8 karakter" required minlength="8" oninput="checkPasswordStrength(this, 'mitra')">
                             <i class="fas fa-eye password-toggle" onclick="togglePassword('password_mitra')"></i>
                         </div>
                         <div class="password-strength" id="strength_mitra"></div>
-                        <small class="text-muted">Minimal 8 karakter.</small>
+                        
+                        <!-- Password Requirements -->
+                        <div class="password-requirements" id="requirements_mitra">
+                            <small class="text-muted d-block mb-1">Password harus mengandung:</small>
+                            <small class="requirement" id="req_length_mitra">
+                                <i class="fas fa-circle"></i> Minimal 8 karakter
+                            </small>
+                            <small class="requirement" id="req_lowercase_mitra">
+                                <i class="fas fa-circle"></i> Huruf kecil (a-z)
+                            </small>
+                            <small class="requirement" id="req_uppercase_mitra">
+                                <i class="fas fa-circle"></i> Huruf besar (A-Z)
+                            </small>
+                            <small class="requirement" id="req_number_mitra">
+                                <i class="fas fa-circle"></i> Angka (0-9)
+                            </small>
+                            <small class="requirement" id="req_special_mitra">
+                                <i class="fas fa-circle"></i> Simbol (!@#$%^&*)
+                            </small>
+                        </div>
                     </div>
                     
                     <div class="mb-4">
                         <label class="form-label">
                             <i class="fas fa-lock me-1"></i>Konfirmasi Password <span class="text-danger">*</span>
                         </label>
-                        <div class="position-relative">
+                        <div class="password-input-wrapper">
                             <input type="password" name="confirm_password" id="confirm_password_mitra" class="form-control" placeholder="Ulangi password" required oninput="checkPasswordMatch('mitra')">
                             <i class="fas fa-eye password-toggle" onclick="togglePassword('confirm_password_mitra')"></i>
                         </div>
@@ -233,7 +266,6 @@ function validatePhone(type) {
         return;
     }
     
-    // Check if phone number is valid (10-15 digits)
     if (/^[0-9]{10,15}$/.test(phoneValue)) {
         phoneField.classList.remove('is-invalid');
         phoneField.classList.add('is-valid');
@@ -245,23 +277,70 @@ function validatePhone(type) {
     }
 }
 
-// Check Password Strength
+// Check Password Strength with Requirements
 function checkPasswordStrength(field, type) {
     const password = field.value;
     const strengthBar = document.getElementById('strength_' + type);
     
+    // Requirements elements
+    const reqLength = document.getElementById('req_length_' + type);
+    const reqLowercase = document.getElementById('req_lowercase_' + type);
+    const reqUppercase = document.getElementById('req_uppercase_' + type);
+    const reqNumber = document.getElementById('req_number_' + type);
+    const reqSpecial = document.getElementById('req_special_' + type);
+    
     if (password.length === 0) {
         strengthBar.className = 'password-strength';
+        // Reset all requirements
+        [reqLength, reqLowercase, reqUppercase, reqNumber, reqSpecial].forEach(req => {
+            req.classList.remove('met');
+        });
         return;
     }
     
     let strength = 0;
-    if (password.length >= 8) strength++;
-    if (/[a-z]/.test(password)) strength++;
-    if (/[A-Z]/.test(password)) strength++;
-    if (/[0-9]/.test(password)) strength++;
-    if (/[^a-zA-Z0-9]/.test(password)) strength++;
     
+    // Check length
+    if (password.length >= 8) {
+        strength++;
+        reqLength.classList.add('met');
+    } else {
+        reqLength.classList.remove('met');
+    }
+    
+    // Check lowercase
+    if (/[a-z]/.test(password)) {
+        strength++;
+        reqLowercase.classList.add('met');
+    } else {
+        reqLowercase.classList.remove('met');
+    }
+    
+    // Check uppercase
+    if (/[A-Z]/.test(password)) {
+        strength++;
+        reqUppercase.classList.add('met');
+    } else {
+        reqUppercase.classList.remove('met');
+    }
+    
+    // Check number
+    if (/[0-9]/.test(password)) {
+        strength++;
+        reqNumber.classList.add('met');
+    } else {
+        reqNumber.classList.remove('met');
+    }
+    
+    // Check special character
+    if (/[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]/.test(password)) {
+        strength++;
+        reqSpecial.classList.add('met');
+    } else {
+        reqSpecial.classList.remove('met');
+    }
+    
+    // Update strength bar
     strengthBar.className = 'password-strength';
     if (strength < 3) {
         strengthBar.classList.add('strength-weak');
@@ -272,7 +351,7 @@ function checkPasswordStrength(field, type) {
     }
 }
 
-// Check Password Match - DIPERBAIKI AGAR DINAMIS
+// Check Password Match
 function checkPasswordMatch(type) {
     const password = document.getElementById('password_' + type).value;
     const confirmPassword = document.getElementById('confirm_password_' + type).value;
@@ -280,25 +359,23 @@ function checkPasswordMatch(type) {
     const invalidFeedback = confirmField.parentElement.nextElementSibling;
     const validFeedback = invalidFeedback ? invalidFeedback.nextElementSibling : null;
     
-    // Jika field kosong, reset validasi
     if (confirmPassword === '') {
         confirmField.classList.remove('is-valid', 'is-invalid');
-        if (invalidFeedback) invalidFeedback.classList.remove('show');
-        if (validFeedback) validFeedback.classList.remove('show');
+        if (invalidFeedback) invalidFeedback.style.display = 'none';
+        if (validFeedback) validFeedback.style.display = 'none';
         return;
     }
     
-    // Cek apakah password cocok
     if (password === confirmPassword && password !== '') {
         confirmField.classList.remove('is-invalid');
         confirmField.classList.add('is-valid');
-        if (invalidFeedback) invalidFeedback.classList.remove('show');
-        if (validFeedback) validFeedback.classList.add('show');
+        if (invalidFeedback) invalidFeedback.style.display = 'none';
+        if (validFeedback) validFeedback.style.display = 'block';
     } else {
         confirmField.classList.remove('is-valid');
         confirmField.classList.add('is-invalid');
-        if (invalidFeedback) invalidFeedback.classList.add('show');
-        if (validFeedback) validFeedback.classList.remove('show');
+        if (invalidFeedback) invalidFeedback.style.display = 'block';
+        if (validFeedback) validFeedback.style.display = 'none';
     }
 }
 
@@ -308,16 +385,31 @@ function validateForm(type) {
     const password = document.getElementById('password_' + type).value;
     const confirmPassword = document.getElementById('confirm_password_' + type).value;
     
+    // Check password requirements
+    const hasLength = password.length >= 8;
+    const hasLowercase = /[a-z]/.test(password);
+    const hasUppercase = /[A-Z]/.test(password);
+    const hasNumber = /[0-9]/.test(password);
+    const hasSpecial = /[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]/.test(password);
+    
+    if (!hasLength || !hasLowercase || !hasUppercase || !hasNumber || !hasSpecial) {
+        alert('Password harus memenuhi semua persyaratan:\n- Minimal 8 karakter\n- Huruf kecil (a-z)\n- Huruf besar (A-Z)\n- Angka (0-9)\n- Simbol (!@#$%^&*)');
+        valid = false;
+        return valid;
+    }
+    
     // Check password match
     if (password !== confirmPassword) {
         alert('Password dan konfirmasi password tidak cocok!');
         valid = false;
+        return valid;
     }
     
     if (valid) {
         const btnId = 'btn' + type.charAt(0).toUpperCase() + type.slice(1);
-        document.getElementById(btnId).disabled = true;
-        document.getElementById(btnId).innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Memproses...';
+        const btn = document.getElementById(btnId);
+        btn.disabled = true;
+        btn.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Memproses...';
     }
     
     return valid;

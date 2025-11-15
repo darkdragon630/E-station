@@ -46,7 +46,6 @@ body {
     margin-bottom: 20px;
 }
 
-/* ===== ILLUSTRATION ===== */
 .page-header img {
     margin-bottom: 0;
     padding-bottom: 20px;
@@ -182,6 +181,33 @@ textarea.form-control {
     min-height: 60px;
 }
 
+/* ===== PASSWORD INPUT WRAPPER ===== */
+.password-input-wrapper {
+    position: relative;
+    display: block;
+}
+
+.password-input-wrapper .form-control {
+    padding-right: 45px; /* Berikan space untuk icon */
+}
+
+/* ===== PASSWORD TOGGLE ===== */
+.password-toggle {
+    position: absolute;
+    right: 12px;
+    top: 50%;
+    transform: translateY(-50%);
+    cursor: pointer;
+    color: #6b7280;
+    transition: color 0.3s;
+    font-size: 16px;
+    z-index: 10;
+}
+
+.password-toggle:hover {
+    color: #1a3a52;
+}
+
 /* ===== VALIDATION FEEDBACK ===== */
 .invalid-feedback {
     font-size: 12px;
@@ -207,7 +233,7 @@ textarea.form-control {
     display: block;
 }
 
-/* ===== PASSWORD STRENGTH ===== */
+/* ===== PASSWORD STRENGTH BAR ===== */
 .password-strength {
     height: 5px;
     border-radius: 3px;
@@ -217,33 +243,53 @@ textarea.form-control {
 }
 
 .strength-weak { 
-    background: #ef4444; 
-    width: 33%; 
+    background: linear-gradient(90deg, #ef4444 0%, #ef4444 33%, #e5e7eb 33%);
 }
 
 .strength-medium { 
-    background: #f59e0b; 
-    width: 66%; 
+    background: linear-gradient(90deg, #f59e0b 0%, #f59e0b 66%, #e5e7eb 66%);
 }
 
 .strength-strong { 
-    background: #10b981; 
-    width: 100%; 
+    background: linear-gradient(90deg, #10b981 0%, #10b981 100%);
 }
 
-/* ===== PASSWORD TOGGLE ===== */
-.password-toggle {
-    position: absolute;
-    right: 12px;
-    top: 50%;
-    transform: translateY(-50%);
-    cursor: pointer;
-    color: #6b7280;
-    transition: color 0.3s;
+/* ===== PASSWORD REQUIREMENTS ===== */
+.password-requirements {
+    margin-top: 10px;
+    padding: 12px;
+    background-color: #f8fafc;
+    border-radius: 8px;
+    border: 1px solid #e2e8f0;
+    text-align: left;
 }
 
-.password-toggle:hover {
-    color: #1a3a52;
+.password-requirements small {
+    display: block;
+    color: #64748b;
+    font-size: 12px;
+    margin-bottom: 6px;
+    transition: all 0.3s ease;
+}
+
+.password-requirements .requirement {
+    padding-left: 5px;
+}
+
+.password-requirements .requirement i {
+    font-size: 6px;
+    margin-right: 8px;
+    color: #cbd5e1;
+    transition: all 0.3s ease;
+}
+
+.password-requirements .requirement.met {
+    color: #10b981;
+    font-weight: 600;
+}
+
+.password-requirements .requirement.met i {
+    color: #10b981;
 }
 
 /* ===== BUTTONS ===== */
@@ -296,10 +342,6 @@ textarea.form-control {
 }
 
 /* ===== UTILITY CLASSES ===== */
-.position-relative {
-    position: relative;
-}
-
 .text-danger {
     color: #ef4444;
 }
@@ -331,6 +373,14 @@ textarea.form-control {
 
 .p-0 {
     padding: 0;
+}
+
+.d-block {
+    display: block;
+}
+
+.mb-1 {
+    margin-bottom: 0.25rem;
 }
 
 /* ===== ALERT STYLES ===== */
@@ -377,8 +427,8 @@ textarea.form-control {
         font-size: 32px;
     }
     
-    .illustration img {
-        width: 100px;
+    .page-header img {
+        width: 120px;
     }
     
     .card-header {
@@ -390,7 +440,7 @@ textarea.form-control {
     }
     
     .form-box {
-        padding: 25px;
+        padding: 30px 25px;
     }
 }
 
@@ -413,12 +463,8 @@ textarea.form-control {
         font-size: 13px;
     }
     
-    .illustration {
-        margin-bottom: 20px;
-    }
-    
-    .illustration img {
-        width: 80px;
+    .page-header img {
+        width: 100px;
     }
     
     .card-header {
@@ -431,7 +477,7 @@ textarea.form-control {
     }
     
     .form-box {
-        padding: 20px;
+        padding: 25px 20px;
     }
     
     .tab-btn {
@@ -448,6 +494,10 @@ textarea.form-control {
         padding: 11px 13px;
     }
     
+    .password-input-wrapper .form-control {
+        padding-right: 40px;
+    }
+    
     .btn-register {
         font-size: 15px;
         padding: 13px;
@@ -455,6 +505,14 @@ textarea.form-control {
     
     .login-link {
         font-size: 13px;
+    }
+    
+    .password-requirements {
+        padding: 10px;
+    }
+    
+    .password-requirements small {
+        font-size: 11px;
     }
 }
 
@@ -469,7 +527,7 @@ textarea.form-control {
     }
     
     .form-box {
-        padding: 15px;
+        padding: 20px 15px;
     }
     
     .tab-btn {
@@ -480,5 +538,9 @@ textarea.form-control {
     .form-control {
         font-size: 12px;
         padding: 10px 12px;
+    }
+    
+    .password-input-wrapper .form-control {
+        padding-right: 38px;
     }
 }

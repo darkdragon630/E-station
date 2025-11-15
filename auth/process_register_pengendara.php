@@ -22,6 +22,16 @@ if ($_SERVER['REQUEST_METHOD'] == "POST") {
         exit();
     }
     
+    // ✅ VALIDASI PASSWORD REQUIREMENTS
+    if (strlen($password) < 8 || 
+        !preg_match('/[a-z]/', $password) || 
+        !preg_match('/[A-Z]/', $password) || 
+        !preg_match('/[0-9]/', $password) || 
+        !preg_match('/[!@#$%^&*()_+\-=\[\]{};\':"\\|,.<>\/?]/', $password)) {
+        header("Location: auth.php?error=weak_password");
+        exit();
+    }
+    
     // Hash password
     $hashed_password = password_hash($password, PASSWORD_DEFAULT);
     

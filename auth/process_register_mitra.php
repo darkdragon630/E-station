@@ -22,6 +22,16 @@ if ($_SERVER['REQUEST_METHOD'] == "POST") {
         exit();
     }
     
+    // ✅ VALIDASI PASSWORD REQUIREMENTS
+    if (strlen($password) < 8 || 
+        !preg_match('/[a-z]/', $password) || 
+        !preg_match('/[A-Z]/', $password) || 
+        !preg_match('/[0-9]/', $password) || 
+        !preg_match('/[!@#$%^&*()_+\-=\[\]{};\':"\\|,.<>\/?]/', $password)) {
+        header("Location: auth.php?error=weak_password");
+        exit();
+    }
+    
     // Hash password
     $hashed_password = password_hash($password, PASSWORD_DEFAULT);
     
@@ -47,7 +57,7 @@ if ($_SERVER['REQUEST_METHOD'] == "POST") {
             exit();
         }
         
-        // ✅ PERBAIKAN: Tambahkan kolom status dengan nilai 'pending'
+        // Insert ke database dengan status 'pending'
         $stmt = $koneksi->prepare("
             INSERT INTO mitra 
             (nama_mitra, email, password, no_telepon, alamat, status, email_terverifikasi, verifikasi_token, token_created_at) 

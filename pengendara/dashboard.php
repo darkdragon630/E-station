@@ -3,13 +3,12 @@ session_start();
 require_once '../config/koneksi.php';
 require_once '../pesan/alerts.php';
 
-// ✅ FIXED: Cek authentication dengan konsisten
+// Cek authentication
 if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'pengendara') {
     header('Location: ../auth/login.php');
     exit;
 }
 
-// ✅ FIXED: Gunakan user_id sebagai id_pengendara
 $id_pengendara = $_SESSION['user_id'];
 
 try {
@@ -40,7 +39,6 @@ try {
     $notifikasi = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
 } catch (PDOException $e) {
-    error_log("Database error: " . $e->getMessage());
     $transaksi_terbaru = [];
     $notifikasi = [];
     $kendaraan = null;
@@ -70,23 +68,8 @@ try {
     <button id="toggleTheme">🌙</button>
 </div>
 
-<!-- DESKTOP NAVBAR -->
-<nav class="navbar navbar-expand-lg">
-    <div class="container">
-        <a class="navbar-brand" href="dashboard.php">⚡ E-Station</a>
-        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
-            <span class="navbar-toggler-icon"></span>
-        </button>
-        <div class="collapse navbar-collapse" id="navbarNav">
-            <div class="navbar-nav ms-auto">
-                <a class="nav-link" href="search_location.php"><i class="fas fa-map-marked-alt me-1"></i> Cari Lokasi</a>
-                <a class="nav-link" href="transaction_history.php"><i class="fas fa-history me-1"></i> Riwayat</a>
-                <a class="nav-link" href="battery_stock.php"><i class="fas fa-battery-full me-1"></i> Stok Baterai</a>
-                <a class="nav-link" href="../auth/logout.php"><i class="fas fa-sign-out-alt me-1"></i> Logout</a>
-            </div>
-        </div>
-    </div>
-</nav>
+<!-- DESKTOP NAVBAR - Reusable Component -->
+<?php include '../components/navbar-pengendara.php'; ?>
 
 <!-- MOBILE HEADER -->
 <div class="mobile-header d-md-none">
@@ -140,9 +123,9 @@ try {
         </div>
     </div>
 
-    <!-- Quick Stats Desktop -->
+    <!-- Quick Stats Desktop (2x2 Grid) -->
     <div class="row mb-4 d-none d-md-flex">
-        <div class="col-md-3 mb-3">
+        <div class="col-md-6 mb-3">
             <div class="card text-center" style="background: linear-gradient(135deg, #667eea, #764ba2); color: white;">
                 <div class="card-body">
                     <i class="fas fa-bolt fa-2x mb-2"></i>
@@ -151,7 +134,7 @@ try {
                 </div>
             </div>
         </div>
-        <div class="col-md-3 mb-3">
+        <div class="col-md-6 mb-3">
             <div class="card text-center" style="background: linear-gradient(135deg, #f093fb, #f5576c); color: white;">
                 <div class="card-body">
                     <i class="fas fa-car fa-2x mb-2"></i>
@@ -160,7 +143,7 @@ try {
                 </div>
             </div>
         </div>
-        <div class="col-md-3 mb-3">
+        <div class="col-md-6 mb-3">
             <div class="card text-center" style="background: linear-gradient(135deg, #4facfe, #00f2fe); color: white;">
                 <div class="card-body">
                     <i class="fas fa-bell fa-2x mb-2"></i>
@@ -169,76 +152,12 @@ try {
                 </div>
             </div>
         </div>
-        <div class="col-md-3 mb-3">
+        <div class="col-md-6 mb-3">
             <div class="card text-center" style="background: linear-gradient(135deg, #43e97b, #38f9d7); color: white;">
                 <div class="card-body">
                     <i class="fas fa-charging-station fa-2x mb-2"></i>
                     <h4 class="mb-0">Aktif</h4>
                     <small>Status Akun</small>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- MOBILE QUICK ACTIONS -->
-    <div class="quick-actions d-md-none">
-        <h5><i class="fas fa-bolt"></i>Aksi Cepat</h5>
-        <div class="action-grid">
-            <a href="search_location.php" class="action-btn">
-                <i class="fas fa-map-marked-alt"></i>
-                <strong>Cari Stasiun</strong>
-                <small>Terdekat</small>
-            </a>
-            <a href="battery_stock.php" class="action-btn">
-                <i class="fas fa-battery-full"></i>
-                <strong>Stok Baterai</strong>
-                <small>Real-time</small>
-            </a>
-            <a href="transaction_history.php" class="action-btn">
-                <i class="fas fa-history"></i>
-                <strong>Riwayat</strong>
-                <small>Transaksi</small>
-            </a>
-            <a href="profile.php" class="action-btn">
-                <i class="fas fa-user-circle"></i>
-                <strong>Profil</strong>
-                <small>Akun Saya</small>
-            </a>
-        </div>
-    </div>
-
-    <!-- Quick Actions Desktop -->
-    <div class="card mb-4 d-none d-md-block" style="background: rgba(255,255,255,0.05); backdrop-filter: blur(10px);">
-        <div class="card-body">
-            <h5 class="card-title mb-3"><i class="fas fa-bolt me-2"></i>Aksi Cepat</h5>
-            <div class="row">
-                <div class="col-md-3 mb-3">
-                    <a href="search_location.php" class="btn btn-primary w-100" style="background: linear-gradient(135deg, #667eea, #764ba2); padding: 30px 20px;">
-                        <i class="fas fa-map-marked-alt d-block mb-2" style="font-size: 2rem;"></i>
-                        <strong>Cari Stasiun</strong>
-                        <br><small>Temukan stasiun terdekat</small>
-                    </a>
-                </div>
-                <div class="col-md-3 mb-3">
-                    <a href="battery_stock.php" class="btn btn-success w-100" style="background: linear-gradient(135deg, #43e97b, #38f9d7); padding: 30px 20px;">
-                        <i class="fas fa-battery-full d-block mb-2" style="font-size: 2rem;"></i>
-                        <strong>Cek Stok Baterai</strong>
-                        <br><small>Real-time availability</small>
-                    </a>
-                </div>
-                <div class="col-md-3 mb-3">
-                    <a href="transaction_history.php" class="btn btn-info w-100" style="background: linear-gradient(135deg, #4facfe, #00f2fe); padding: 30px 20px;">
-                        <i class="fas fa-history d-block mb-2" style="font-size: 2rem;"></i>
-                        <strong>Riwayat</strong>
-                        <br><small>Lihat transaksi Anda</small>
-                    </a>
-                </div>
-                <div class="col-md-3 mb-3">
-                    <a href="profile.php" class="btn btn-warning w-100" style="background: linear-gradient(135deg, #f093fb, #f5576c); padding: 30px 20px;">
-                        <i class="fas fa-user-circle d-block mb-2" style="font-size: 2rem;"></i>
-                        <strong>Profil</strong>
-                        <br><small>Kelola akun Anda</small>
-                    </a>
                 </div>
             </div>
         </div>
@@ -372,29 +291,8 @@ try {
 
 </div>
 
-<!-- BOTTOM NAVIGATION (MOBILE) -->
-<nav class="bottom-nav d-md-none" style="display: flex !important; flex-direction: row !important;">
-    <a href="dashboard.php" class="active" style="display: flex !important; flex-direction: column !important;">
-        <i class="fas fa-home"></i>
-        <span>Beranda</span>
-    </a>
-    <a href="search_location.php" style="display: flex !important; flex-direction: column !important;">
-        <i class="fas fa-map-marked-alt"></i>
-        <span>Lokasi</span>
-    </a>
-    <a href="battery_stock.php" style="display: flex !important; flex-direction: column !important;">
-        <i class="fas fa-battery-full"></i>
-        <span>Stok</span>
-    </a>
-    <a href="transaction_history.php" style="display: flex !important; flex-direction: column !important;">
-        <i class="fas fa-history"></i>
-        <span>Riwayat</span>
-    </a>
-    <a href="profile.php" style="display: flex !important; flex-direction: column !important;">
-        <i class="fas fa-user"></i>
-        <span>Profil</span>
-    </a>
-</nav>
+<!-- BOTTOM NAVIGATION (MOBILE) - Reusable Component -->
+<?php include '../components/bottom-nav.php'; ?>
 
 <!-- SCRIPT -->
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
@@ -447,20 +345,6 @@ document.addEventListener('touchend', function (event) {
     }
     lastTouchEnd = now;
 }, false);
-
-// Active bottom nav highlight
-document.addEventListener('DOMContentLoaded', function() {
-    const currentPage = window.location.pathname.split('/').pop();
-    const navLinks = document.querySelectorAll('.bottom-nav a');
-    
-    navLinks.forEach(link => {
-        link.classList.remove('active');
-        const href = link.getAttribute('href');
-        if (href === currentPage || (currentPage === '' && href === 'dashboard.php')) {
-            link.classList.add('active');
-        }
-    });
-});
 </script>
 
 </body>

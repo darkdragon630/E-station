@@ -1,7 +1,9 @@
 <?php
 session_start();
 require_once '../config/koneksi.php';
-require_once '../pesan/alert.php';
+
+// Fix CSP untuk Google Fonts
+header("Content-Security-Policy: default-src 'self'; script-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net https://cdnjs.cloudflare.com https://nominatim.openstreetmap.org; style-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net https://cdnjs.cloudflare.com https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com https://cdnjs.cloudflare.com; img-src 'self' data: https: http:; connect-src 'self' https://nominatim.openstreetmap.org https://*.tile.openstreetmap.org https://raw.githubusercontent.com;");
 
 if (!isset($_SESSION['user_id'])) {
     header('Location: ../auth/login.php');
@@ -55,14 +57,21 @@ try {
 <html lang="id">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="theme-color" content="#0a192f">
     <title>Cari Lokasi Stasiun - E-Station</title>
 
     <!-- Bootstrap -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
 
     <!-- Leaflet -->
-    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css" />
+    
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="../css/pengendara-style.css">
 
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap');
@@ -84,7 +93,6 @@ body {
     overflow-x: hidden;
 }
 
-/* Animated Background Particles */
 body::before {
     content: '';
     position: fixed;
@@ -111,64 +119,6 @@ body::before {
     z-index: 1;
 }
 
-/* Navbar Glass Effect */
-.navbar {
-    background: rgba(15, 23, 42, 0.75) !important;
-    backdrop-filter: blur(20px) saturate(180%);
-    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
-    transition: all 0.3s ease;
-}
-
-.navbar:hover {
-    background: rgba(15, 23, 42, 0.85) !important;
-}
-
-.navbar-brand {
-    color: #e2e8f0 !important;
-    font-weight: 800;
-    font-size: 1.5rem;
-    letter-spacing: -0.5px;
-    transition: all 0.3s ease;
-    text-shadow: 0 0 20px rgba(96, 165, 250, 0.5);
-}
-
-.navbar-brand:hover {
-    color: #60a5fa !important;
-    transform: translateY(-2px);
-    text-shadow: 0 0 30px rgba(96, 165, 250, 0.8);
-}
-
-.nav-link {
-    color: #cbd5e1 !important;
-    font-weight: 500;
-    transition: all 0.3s ease;
-    position: relative;
-    padding: 8px 16px !important;
-}
-
-.nav-link::after {
-    content: '';
-    position: absolute;
-    bottom: 0;
-    left: 50%;
-    width: 0;
-    height: 2px;
-    background: linear-gradient(90deg, #3b82f6, #60a5fa);
-    transition: all 0.3s ease;
-    transform: translateX(-50%);
-}
-
-.nav-link:hover {
-    color: #60a5fa !important;
-    transform: translateY(-2px);
-}
-
-.nav-link:hover::after {
-    width: 80%;
-}
-
-/* Map Container with Glow */
 #map {
     height: 550px;
     border-radius: 20px;
@@ -190,7 +140,6 @@ body::before {
     transform: translateY(-4px);
 }
 
-/* Search Input with Glass Effect */
 .form-control {
     background: rgba(255, 255, 255, 0.08);
     backdrop-filter: blur(10px);
@@ -218,7 +167,6 @@ body::before {
     font-weight: 400;
 }
 
-/* Enhanced Buttons */
 .btn {
     border-radius: 12px;
     padding: 12px 24px;
@@ -275,7 +223,6 @@ body::before {
     font-size: 0.85rem;
 }
 
-/* Card with Advanced Glass Effect */
 .card {
     background: rgba(255, 255, 255, 0.08);
     backdrop-filter: blur(16px) saturate(180%);
@@ -325,7 +272,6 @@ body::before {
     line-height: 1.5;
 }
 
-/* Stock Badge with Pulse Animation */
 .stock-badge {
     padding: 8px 14px;
     border-radius: 14px;
@@ -363,7 +309,6 @@ body::before {
     color: white;
 }
 
-/* Distance Badge */
 .distance-badge {
     padding: 6px 12px;
     border-radius: 12px;
@@ -375,7 +320,6 @@ body::before {
     display: inline-block;
 }
 
-/* Estimation Box with Gradient */
 .nearest-info {
     background: linear-gradient(135deg, #1e3a8a 0%, #1e40af 50%, #0ea5e9 100%);
     padding: 28px;
@@ -413,50 +357,6 @@ body::before {
     font-weight: 500;
 }
 
-.nearest-info strong {
-    font-weight: 700;
-}
-
-/* Theme Toggle Button */
-.theme-toggle {
-    position: fixed;
-    top: 90px;
-    right: 24px;
-    z-index: 1050;
-}
-
-.theme-toggle button {
-    font-size: 2rem;
-    background: rgba(255, 255, 255, 0.12);
-    backdrop-filter: blur(16px);
-    border: 2px solid rgba(255, 255, 255, 0.2);
-    border-radius: 50%;
-    width: 60px;
-    height: 60px;
-    cursor: pointer;
-    color: inherit;
-    transition: all 0.4s ease;
-    box-shadow: 
-        0 4px 16px rgba(0, 0, 0, 0.2),
-        0 0 20px rgba(96, 165, 250, 0.3);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-}
-
-.theme-toggle button:hover {
-    transform: rotate(180deg) scale(1.1);
-    box-shadow: 
-        0 8px 24px rgba(0, 0, 0, 0.3),
-        0 0 40px rgba(96, 165, 250, 0.5);
-    background: rgba(255, 255, 255, 0.2);
-}
-
-.theme-toggle button:active {
-    transform: rotate(180deg) scale(0.95);
-}
-
-/* Alert Messages */
 .alert {
     border-radius: 16px;
     border: none;
@@ -484,7 +384,6 @@ body::before {
     border-left: 4px solid #ef4444;
 }
 
-/* Page Title */
 h2 {
     font-weight: 800;
     font-size: 2rem;
@@ -493,7 +392,6 @@ h2 {
     -webkit-text-fill-color: transparent;
     background-clip: text;
     margin-bottom: 24px;
-    text-shadow: 0 4px 12px rgba(96, 165, 250, 0.3);
 }
 
 h5 {
@@ -501,7 +399,6 @@ h5 {
     margin-bottom: 12px;
 }
 
-/* Station List Scrollbar */
 #stationList::-webkit-scrollbar {
     width: 8px;
 }
@@ -531,20 +428,6 @@ body.light::before {
     background: 
         radial-gradient(circle at 20% 30%, rgba(59, 130, 246, 0.08) 0%, transparent 50%),
         radial-gradient(circle at 80% 70%, rgba(96, 165, 250, 0.05) 0%, transparent 50%);
-}
-
-body.light .navbar {
-    background: rgba(255, 255, 255, 0.8) !important;
-    border-bottom: 1px solid rgba(0, 0, 0, 0.08);
-}
-
-body.light .navbar-brand {
-    color: #1e293b !important;
-    text-shadow: 0 0 20px rgba(59, 130, 246, 0.3);
-}
-
-body.light .nav-link {
-    color: #475569 !important;
 }
 
 body.light .card {
@@ -596,14 +479,6 @@ body.light .nearest-info {
     background: linear-gradient(135deg, #3b82f6, #60a5fa, #38bdf8);
 }
 
-body.light .theme-toggle button {
-    background: rgba(0, 0, 0, 0.05);
-    border-color: rgba(0, 0, 0, 0.1);
-    box-shadow: 
-        0 4px 16px rgba(0, 0, 0, 0.1),
-        0 0 20px rgba(59, 130, 246, 0.2);
-}
-
 body.light h2 {
     background: linear-gradient(135deg, #2563eb, #3b82f6, #60a5fa);
     -webkit-background-clip: text;
@@ -621,7 +496,6 @@ body.light .alert-info {
     color: #0c4a6e;
 }
 
-/* Responsive Design */
 @media (max-width: 768px) {
     #map {
         height: 400px;
@@ -631,18 +505,11 @@ body.light .alert-info {
         font-size: 1.5rem;
     }
     
-    .theme-toggle button {
-        width: 50px;
-        height: 50px;
-        font-size: 1.5rem;
-    }
-    
     .nearest-info {
         padding: 20px;
     }
 }
 
-/* Loading Animation */
 @keyframes spin {
     to { transform: rotate(360deg); }
 }
@@ -653,31 +520,34 @@ body.light .alert-info {
 </style>
 </head>
 <body>
+    <!-- DESKTOP THEME TOGGLE -->
     <div class="theme-toggle">
         <button id="toggleTheme" aria-label="Ganti Tema">🌙</button>
     </div>
 
-    <!-- NAVBAR -->
-    <nav class="navbar navbar-expand-lg">
-        <div class="container">
-            <a class="navbar-brand" href="dashboard.php">⚡ E-Station</a>
-            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
-                <span class="navbar-toggler-icon"></span>
-            </button>
-            <div class="collapse navbar-collapse justify-content-end" id="navbarNav">
-                <div class="navbar-nav">
-                    <a class="nav-link" href="dashboard.php">Dashboard</a>
-                    <a class="nav-link" href="transaction_history.php">Riwayat</a>
-                    <a class="nav-link" href="battery_stock.php">Stok Baterai</a>
-                    <a class="nav-link" href="../auth/logout.php">Logout</a>
-                </div>
+    <!-- DESKTOP NAVBAR -->
+    <?php include '../components/navbar-pengendara.php'; ?>
+
+    <!-- MOBILE HEADER -->
+    <div class="mobile-header d-md-none">
+        <div class="header-top">
+            <div class="logo">
+                <i class="fas fa-bolt"></i>
+                E-Station
+            </div>
+            <div class="header-actions">
+                <button id="mobileThemeToggle">🌙</button>
             </div>
         </div>
-    </nav>
+        <div class="welcome-text">
+            <h2>🗺️ Cari Lokasi Stasiun</h2>
+            <p>Temukan stasiun pengisian terdekat</p>
+        </div>
+    </div>
 
     <!-- CONTENT -->
     <div class="container mt-4 mb-5">
-        <?php tampilkan_alert(); ?>
+        
         <?php if (isset($error_message)): ?>
             <div class="alert alert-warning alert-dismissible fade show" role="alert">
                 <strong>⚠️ Perhatian:</strong> <?php echo htmlspecialchars($error_message); ?>
@@ -692,20 +562,23 @@ body.light .alert-info {
             </div>
         <?php endif; ?>
 
-        <h2 class="mb-4">🗺️ Cari Lokasi Stasiun Pengisian</h2>
+        <h2 class="mb-4 d-none d-md-block">🗺️ Cari Lokasi Stasiun Pengisian</h2>
         <div class="row">
             <!-- MAP -->
             <div class="col-lg-8 mb-4">
                 <div class="mb-3">
                     <input id="searchInput" type="text" class="form-control" placeholder="🔍 Cari alamat atau kota...">
                     <div class="d-flex gap-2 mt-3">
+                        <button id="getCurrentLocation" class="btn btn-success flex-grow-1" style="font-size: 1rem; padding: 14px;">
+                            <span>📍</span> <strong>Lokasi Saya</strong>
+                        </button>
                         <button id="searchBtn" class="btn btn-primary flex-grow-1">
                             <span>🔍</span> Cari Lokasi
                         </button>
-                        <button id="getCurrentLocation" class="btn btn-success flex-grow-1">
-                            <span>📍</span> Lokasi Saya
-                        </button>
                     </div>
+                    <small class="text-muted d-block mt-2">
+                        💡 <strong>Tip:</strong> Klik "Lokasi Saya" untuk menemukan stasiun terdekat dari Anda
+                    </small>
                 </div>
                 <div id="map"></div>
             </div>
@@ -761,63 +634,95 @@ body.light .alert-info {
         </div>
     </div>
 
-    <!-- LEAFLET JS -->
-    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <!-- BOTTOM NAVIGATION (MOBILE) -->
+    <?php include '../components/bottom-nav.php'; ?>
+
+    <!-- SCRIPTS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
+    
     <script>
+        // ===== THEME INITIALIZATION =====
+        (function() {
+            const savedTheme = localStorage.getItem("theme");
+            if (savedTheme === "light") {
+                document.body.classList.add("light");
+                const desktopBtn = document.getElementById("toggleTheme");
+                const mobileBtn = document.getElementById("mobileThemeToggle");
+                if (desktopBtn) desktopBtn.textContent = "☀️";
+                if (mobileBtn) mobileBtn.textContent = "☀️";
+            }
+        })();
+
+        // ===== MAP INITIALIZATION WITH AUTO LOCATION =====
         let map, userMarker, routeLine;
         const stations = <?php echo json_encode($stasiun); ?>;
         const stationMarkers = [];
         let userLocation = null;
+        let initialLocationSet = false;
 
-        // INISIALISASI MAP
-        map = L.map('map').setView([-6.2088,106.8456],12);
-        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{
-            attribution:'© OpenStreetMap',
-            maxZoom:19
+        // INISIALISASI MAP - Start dengan Indonesia view
+        map = L.map('map').setView([-2.5489, 118.0149], 5);
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            attribution: '© OpenStreetMap',
+            maxZoom: 19
         }).addTo(map);
 
         // ICON
         const userIcon = L.icon({
-            iconUrl:'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-blue.png',
-            shadowUrl:'https://cdnjs.cloudflare.com/ajax/libs/leaflet/0.7.7/images/marker-shadow.png',
-            iconSize:[25,41], iconAnchor:[12,41], popupAnchor:[1,-34], shadowSize:[41,41]
+            iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-blue.png',
+            shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/0.7.7/images/marker-shadow.png',
+            iconSize: [25, 41],
+            iconAnchor: [12, 41],
+            popupAnchor: [1, -34],
+            shadowSize: [41, 41]
         });
 
         // MARKER STASIUN
-        stations.forEach(st=>{
-            const stock=parseInt(st.total_stok);
-            let color='green';
-            if(stock==0) color='grey';
-            else if(stock<=3) color='red';
-            else if(stock<=10) color='orange';
+        stations.forEach(st => {
+            const stock = parseInt(st.total_stok);
+            let color = 'green';
+            if (stock == 0) color = 'grey';
+            else if (stock <= 3) color = 'red';
+            else if (stock <= 10) color = 'orange';
 
-            const icon=L.icon({
-                iconUrl:`https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-${color}.png`,
-                shadowUrl:'https://cdnjs.cloudflare.com/ajax/libs/leaflet/0.7.7/images/marker-shadow.png',
-                iconSize:[25,41], iconAnchor:[12,41], popupAnchor:[1,-34], shadowSize:[41,41]
+            const icon = L.icon({
+                iconUrl: `https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-${color}.png`,
+                shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/0.7.7/images/marker-shadow.png',
+                iconSize: [25, 41],
+                iconAnchor: [12, 41],
+                popupAnchor: [1, -34],
+                shadowSize: [41, 41]
             });
 
-            const marker=L.marker([parseFloat(st.latitude),parseFloat(st.longitude)],{icon:icon}).addTo(map);
+            const marker = L.marker([parseFloat(st.latitude), parseFloat(st.longitude)], {icon: icon}).addTo(map);
             marker.bindPopup(`<b>${st.nama_stasiun}</b><br>${st.alamat}<br>🔋 ${st.total_stok} unit`);
-            stationMarkers.push({marker:marker,data:st});
+            stationMarkers.push({marker: marker, data: st});
         });
 
+        // Auto fit bounds ke semua stasiun
+        if (stations.length > 0) {
+            const bounds = L.latLngBounds(stations.map(s => [parseFloat(s.latitude), parseFloat(s.longitude)]));
+            map.fitBounds(bounds, {padding: [50, 50], maxZoom: 12});
+        }
+
         // FUNGSI JARAK
-        function calculateDistance(lat1,lon1,lat2,lon2){
-            const R=6371;
-            const dLat=(lat2-lat1)*Math.PI/180;
-            const dLon=(lon2-lon1)*Math.PI/180;
-            const a=Math.sin(dLat/2)**2+Math.cos(lat1*Math.PI/180)*Math.cos(lat2*Math.PI/180)*Math.sin(dLon/2)**2;
-            const c=2*Math.atan2(Math.sqrt(a),Math.sqrt(1-a));
-            return R*c;
+        function calculateDistance(lat1, lon1, lat2, lon2) {
+            const R = 6371;
+            const dLat = (lat2 - lat1) * Math.PI / 180;
+            const dLon = (lon2 - lon1) * Math.PI / 180;
+            const a = Math.sin(dLat / 2) ** 2 + 
+                      Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) * 
+                      Math.sin(dLon / 2) ** 2;
+            const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+            return R * c;
         }
 
         // UPDATE JARAK UNTUK SEMUA CARD
         function updateAllDistances(userLat, userLng) {
             userLocation = {lat: userLat, lng: userLng};
             
-            // Update setiap card dengan jarak
-            document.querySelectorAll('.station-card').forEach(card=>{
+            document.querySelectorAll('.station-card').forEach(card => {
                 const lat = parseFloat(card.dataset.lat);
                 const lng = parseFloat(card.dataset.lng);
                 const dist = calculateDistance(userLat, userLng, lat, lng);
@@ -827,58 +732,79 @@ body.light .alert-info {
                 badge.textContent = `📏 ${dist.toFixed(2)} km`;
                 badge.style.display = 'inline-block';
             });
+            
+            sortStationCards();
         }
 
-        // FUNGSI STASIUN TERDEKAT
-        function findNearestStations(userLat,userLng){
+        // FUNGSI URUTKAN CARD
+        function sortStationCards() {
+            const stationListDiv = document.getElementById('stationList');
+            const cards = Array.from(document.querySelectorAll('.station-card'));
+            
+            cards.sort((a, b) => {
+                const distA = parseFloat(a.dataset.distance) || 999;
+                const distB = parseFloat(b.dataset.distance) || 999;
+                
+                if (Math.abs(distA - distB) < 0.5) {
+                    return parseInt(b.dataset.stock) - parseInt(a.dataset.stock);
+                }
+                return distA - distB;
+            });
+            
+            cards.forEach(c => stationListDiv.appendChild(c));
+        }
+
+        // FUNGSI STASIUN TERDEKAT & ESTIMASI
+        function findNearestStations(userLat, userLng) {
             updateAllDistances(userLat, userLng);
             
-            const stationsWithDistance=stations.map(st=>{
-                const dist=calculateDistance(userLat,userLng,parseFloat(st.latitude),parseFloat(st.longitude));
-                return {...st,distance:dist};
+            // Check if stations array is empty
+            if (!stations || stations.length === 0) {
+                console.warn('⚠️ Tidak ada stasiun tersedia');
+                document.getElementById('estimation').style.display = 'none';
+                return;
+            }
+            
+            const stationsWithDistance = stations.map(st => {
+                const dist = calculateDistance(userLat, userLng, parseFloat(st.latitude), parseFloat(st.longitude));
+                return {...st, distance: dist};
             });
             
-            stationsWithDistance.sort((a,b)=>{
-                if(Math.abs(a.distance-b.distance)<0.5)
-                    return parseInt(b.total_stok)-parseInt(a.total_stok);
-                return a.distance-b.distance;
+            stationsWithDistance.sort((a, b) => {
+                if (Math.abs(a.distance - b.distance) < 0.5)
+                    return parseInt(b.total_stok) - parseInt(a.total_stok);
+                return a.distance - b.distance;
             });
 
-            const nearest=stationsWithDistance[0];
-
-            // URUTKAN CARD
-            const stationListDiv=document.getElementById('stationList');
-            const cards=Array.from(document.querySelectorAll('.station-card'));
-            cards.sort((a,b)=>{
-                const distA=parseFloat(a.dataset.distance)||999;
-                const distB=parseFloat(b.dataset.distance)||999;
-                if(Math.abs(distA-distB)<0.5) return parseInt(b.dataset.stock)-parseInt(a.dataset.stock);
-                return distA-distB;
-            });
-            cards.forEach(c=>stationListDiv.appendChild(c));
+            const nearest = stationsWithDistance[0];
+            
+            // Double check nearest exists
+            if (!nearest) {
+                console.warn('⚠️ Tidak dapat menemukan stasiun terdekat');
+                document.getElementById('estimation').style.display = 'none';
+                return;
+            }
 
             // ESTIMASI
-            const estimatedTime=(nearest.distance/60)*60;
-            const estimatedCost=nearest.distance*2000*0.15;
-            const stock=parseInt(nearest.total_stok);
-            let stockBadge='',stockWarning='';
-            if(stock==0){
-                stockBadge='<span class="badge stock-empty">⚫ Habis</span>'; 
-                stockWarning='<div class="alert alert-danger mt-3 mb-0">⚠️ Stok habis! Pertimbangkan stasiun lain.</div>';
-            }
-            else if(stock<=3){
-                stockBadge='<span class="badge stock-low">🔴 Hampir Habis</span>'; 
-                stockWarning='<div class="alert alert-warning mt-3 mb-0" style="background: rgba(250, 204, 21, 0.2); color: #fef3c7; border-left: 4px solid #facc15;">⚠️ Stok terbatas, hubungi stasiun terlebih dahulu.</div>';
-            }
-            else if(stock<=10){
-                stockBadge='<span class="badge stock-medium">🟡 Terbatas</span>';
-            }
-            else{
-                stockBadge='<span class="badge stock-high">🟢 Banyak</span>';
+            const estimatedTime = (nearest.distance / 60) * 60;
+            const estimatedCost = nearest.distance * 2000 * 0.15;
+            const stock = parseInt(nearest.total_stok);
+            
+            let stockBadge = '', stockWarning = '';
+            if (stock == 0) {
+                stockBadge = '<span class="badge stock-empty">⚫ Habis</span>';
+                stockWarning = '<div class="alert alert-danger mt-3 mb-0">⚠️ Stok habis! Pertimbangkan stasiun lain.</div>';
+            } else if (stock <= 3) {
+                stockBadge = '<span class="badge stock-low">🔴 Hampir Habis</span>';
+                stockWarning = '<div class="alert alert-warning mt-3 mb-0" style="background: rgba(250, 204, 21, 0.2); color: #fef3c7; border-left: 4px solid #facc15;">⚠️ Stok terbatas, hubungi stasiun terlebih dahulu.</div>';
+            } else if (stock <= 10) {
+                stockBadge = '<span class="badge stock-medium">🟡 Terbatas</span>';
+            } else {
+                stockBadge = '<span class="badge stock-high">🟢 Banyak</span>';
             }
 
-            document.getElementById('estimation').style.display='block';
-            document.getElementById('estimationContent').innerHTML=`
+            document.getElementById('estimation').style.display = 'block';
+            document.getElementById('estimationContent').innerHTML = `
                 <div class="row">
                     <div class="col-md-6">
                         <p><strong>🏢 Stasiun:</strong> ${nearest.nama_stasiun}</p>
@@ -887,7 +813,7 @@ body.light .alert-info {
                     </div>
                     <div class="col-md-6">
                         <p><strong>⏱️ Estimasi Waktu:</strong> <span style="font-size: 1.2rem; color: #fbbf24;">${estimatedTime.toFixed(0)} menit</span></p>
-                        <p><strong>💰 Estimasi Biaya:</strong> <span style="font-size: 1.2rem; color: #fbbf24;">Rp ${estimatedCost.toFixed(0).replace(/\B(?=(\d{3})+(?!\d))/g,".")}</span></p>
+                        <p><strong>💰 Estimasi Biaya:</strong> <span style="font-size: 1.2rem; color: #fbbf24;">Rp ${estimatedCost.toFixed(0).replace(/\B(?=(\d{3})+(?!\d))/g, ".")}</span></p>
                         <p><strong>🔋 Ketersediaan:</strong> ${stockBadge} ${stock} unit</p>
                     </div>
                 </div>
@@ -895,72 +821,140 @@ body.light .alert-info {
                 <a href="station_detail.php?id=${nearest.id_stasiun}" class="btn btn-light mt-3 fw-bold" style="border-radius: 12px; padding: 12px 24px;">Detail Lengkap →</a>
             `;
 
-            if(routeLine) map.removeLayer(routeLine);
-            routeLine=L.polyline([[userLat,userLng],[parseFloat(nearest.latitude),parseFloat(nearest.longitude)]],{
-                color:'#3b82f6',
-                weight:4,
-                dashArray:'10,10',
-                opacity:0.8
+            if (routeLine) map.removeLayer(routeLine);
+            routeLine = L.polyline([
+                [userLat, userLng],
+                [parseFloat(nearest.latitude), parseFloat(nearest.longitude)]
+            ], {
+                color: '#3b82f6',
+                weight: 4,
+                dashArray: '10,10',
+                opacity: 0.8
             }).addTo(map);
-            map.fitBounds([[userLat,userLng],[parseFloat(nearest.latitude),parseFloat(nearest.longitude)]],{padding:[50,50]});
+            
+            map.fitBounds([
+                [userLat, userLng],
+                [parseFloat(nearest.latitude), parseFloat(nearest.longitude)]
+            ], {padding: [50, 50]});
         }
 
-        // AUTO-DETECT LOKASI SAAT PAGE LOAD
-        if(navigator.geolocation && stations.length > 0){
-            navigator.geolocation.getCurrentPosition(pos=>{
-                const lat=pos.coords.latitude;
-                const lng=pos.coords.longitude;
-                updateAllDistances(lat, lng);
-                
-                // Urutkan card berdasarkan jarak
-                const stationListDiv=document.getElementById('stationList');
-                const cards=Array.from(document.querySelectorAll('.station-card'));
-                cards.sort((a,b)=>{
-                    const distA=parseFloat(a.dataset.distance)||999;
-                    const distB=parseFloat(b.dataset.distance)||999;
-                    if(Math.abs(distA-distB)<0.5) return parseInt(b.dataset.stock)-parseInt(a.dataset.stock);
-                    return distA-distB;
-                });
-                cards.forEach(c=>stationListDiv.appendChild(c));
-            }, err=>{
-                console.log('Auto-detect location disabled:', err.message);
-            });
+        // AUTO-DETECT LOKASI SAAT PAGE LOAD (PRIORITAS UTAMA)
+        if (navigator.geolocation && stations.length > 0) {
+            // Set timeout untuk auto-trigger jika belum ada lokasi
+            setTimeout(() => {
+                if (!initialLocationSet) {
+                    console.log('⏰ Auto-trigger: Belum ada lokasi, memaksa request GPS...');
+                    document.getElementById('getCurrentLocation').click();
+                }
+            }, 2000);
+            
+            // Langsung request tanpa delay
+            navigator.geolocation.getCurrentPosition(
+                pos => {
+                    const lat = pos.coords.latitude;
+                    const lng = pos.coords.longitude;
+                    
+                    console.log('📍 Lokasi terdeteksi:', lat, lng);
+                    console.log('📍 Koordinat: Lat=' + lat + ', Lng=' + lng);
+                    
+                    // Remove existing user marker
+                    if (userMarker) map.removeLayer(userMarker);
+                    
+                    // Add user marker
+                    userMarker = L.marker([lat, lng], {icon: userIcon})
+                        .addTo(map)
+                        .bindPopup('📍 Lokasi Anda Sekarang')
+                        .openPopup();
+                    
+                    // CRITICAL: Zoom ke lokasi user SEGERA
+                    map.setView([lat, lng], 13);
+                    
+                    // Update distances
+                    updateAllDistances(lat, lng);
+                    
+                    // Find nearest stations
+                    findNearestStations(lat, lng);
+                    
+                    initialLocationSet = true;
+                },
+                err => {
+                    console.error('❌ Auto-detect gagal:', err.code, err.message);
+                    
+                    // Jika gagal, tampilkan alert
+                    const alertDiv = document.createElement('div');
+                    alertDiv.className = 'alert alert-warning alert-dismissible fade show';
+                    alertDiv.innerHTML = `
+                        <strong>⚠️ Perhatian:</strong> Lokasi otomatis gagal (${err.message}). 
+                        <strong>Klik tombol "📍 Lokasi Saya"</strong> untuk mencoba lagi.
+                        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                    `;
+                    document.querySelector('.container').insertBefore(alertDiv, document.querySelector('.row'));
+                },
+                {
+                    enableHighAccuracy: true,
+                    timeout: 5000, // Reduced timeout ke 5 detik
+                    maximumAge: 0
+                }
+            );
+        } else if (stations.length === 0) {
+            console.warn('⚠️ Tidak ada stasiun tersedia');
+        } else {
+            console.warn('⚠️ Geolocation tidak tersedia');
         }
 
         // GEOLOCATION BUTTON
-        document.getElementById('getCurrentLocation').addEventListener('click',()=>{
+        document.getElementById('getCurrentLocation').addEventListener('click', () => {
             const btn = document.getElementById('getCurrentLocation');
             const originalHTML = btn.innerHTML;
             btn.innerHTML = '<span class="loading">🔄</span> Mencari...';
             btn.disabled = true;
             
-            if(navigator.geolocation){
-                navigator.geolocation.getCurrentPosition(pos=>{
-                    const lat=pos.coords.latitude;
-                    const lng=pos.coords.longitude;
-                    if(userMarker) map.removeLayer(userMarker);
-                    userMarker=L.marker([lat,lng],{icon:userIcon}).addTo(map).bindPopup('📍 Lokasi Anda').openPopup();
-                    map.setView([lat,lng],14);
-                    findNearestStations(lat,lng);
-                    
-                    btn.innerHTML = originalHTML;
-                    btn.disabled = false;
-                },err=>{
-                    alert('Gagal mendapatkan lokasi: '+err.message);
-                    btn.innerHTML = originalHTML;
-                    btn.disabled = false;
-                });
-            }else{
-                alert('Geolocation tidak didukung browser Anda.');
+            if (navigator.geolocation) {
+                navigator.geolocation.getCurrentPosition(
+                    pos => {
+                        const lat = pos.coords.latitude;
+                        const lng = pos.coords.longitude;
+                        
+                        console.log('📍 Lokasi saya:', lat, lng);
+                        
+                        if (userMarker) map.removeLayer(userMarker);
+                        userMarker = L.marker([lat, lng], {icon: userIcon})
+                            .addTo(map)
+                            .bindPopup('📍 Lokasi Anda')
+                            .openPopup();
+                        
+                        map.setView([lat, lng], 14);
+                        findNearestStations(lat, lng);
+                        
+                        btn.innerHTML = originalHTML;
+                        btn.disabled = false;
+                    },
+                    err => {
+                        alert('❌ Gagal mendapatkan lokasi: ' + err.message + '\n\nPastikan GPS aktif dan izinkan akses lokasi di browser.');
+                        console.error('Geolocation error:', err);
+                        btn.innerHTML = originalHTML;
+                        btn.disabled = false;
+                    },
+                    {
+                        enableHighAccuracy: true,
+                        timeout: 10000,
+                        maximumAge: 0
+                    }
+                );
+            } else {
+                alert('❌ Geolocation tidak didukung browser Anda.');
                 btn.innerHTML = originalHTML;
                 btn.disabled = false;
             }
         });
 
         // SEARCH BUTTON
-        document.getElementById('searchBtn').addEventListener('click',()=>{
-            const query=document.getElementById('searchInput').value;
-            if(!query){alert('Masukkan lokasi!'); return;}
+        document.getElementById('searchBtn').addEventListener('click', () => {
+            const query = document.getElementById('searchInput').value;
+            if (!query) {
+                alert('❌ Masukkan lokasi!');
+                return;
+            }
             
             const btn = document.getElementById('searchBtn');
             const originalHTML = btn.innerHTML;
@@ -968,68 +962,110 @@ body.light .alert-info {
             btn.disabled = true;
             
             fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(query)}&countrycodes=id`)
-            .then(res=>res.json())
-            .then(data=>{
-                if(data.length>0){
-                    const lat=parseFloat(data[0].lat), lng=parseFloat(data[0].lon);
-                    if(userMarker) map.removeLayer(userMarker);
-                    userMarker=L.marker([lat,lng],{icon:userIcon}).addTo(map).bindPopup(`🔍 ${data[0].display_name}`).openPopup();
-                    map.setView([lat,lng],14);
-                    findNearestStations(lat,lng);
-                }else{
-                    alert('Lokasi tidak ditemukan!');
-                }
-                btn.innerHTML = originalHTML;
-                btn.disabled = false;
-            })
-            .catch(err=>{
-                alert('Error: '+err.message);
-                btn.innerHTML = originalHTML;
-                btn.disabled = false;
-            });
+                .then(res => res.json())
+                .then(data => {
+                    if (data.length > 0) {
+                        const lat = parseFloat(data[0].lat);
+                        const lng = parseFloat(data[0].lon);
+                        
+                        if (userMarker) map.removeLayer(userMarker);
+                        userMarker = L.marker([lat, lng], {icon: userIcon})
+                            .addTo(map)
+                            .bindPopup(`🔍 ${data[0].display_name}`)
+                            .openPopup();
+                        
+                        map.setView([lat, lng], 14);
+                        findNearestStations(lat, lng);
+                    } else {
+                        alert('❌ Lokasi tidak ditemukan!');
+                    }
+                    btn.innerHTML = originalHTML;
+                    btn.disabled = false;
+                })
+                .catch(err => {
+                    alert('❌ Error: ' + err.message);
+                    btn.innerHTML = originalHTML;
+                    btn.disabled = false;
+                });
         });
 
         // ENTER KEY SEARCH
-        document.getElementById('searchInput').addEventListener('keypress',e=>{
-            if(e.key==='Enter') document.getElementById('searchBtn').click();
+        document.getElementById('searchInput').addEventListener('keypress', e => {
+            if (e.key === 'Enter') document.getElementById('searchBtn').click();
         });
 
         // STATION CARD CLICK
-        document.querySelectorAll('.station-card').forEach(card=>{
-            card.addEventListener('click',e=>{
-                if(e.target.tagName==='A') return;
-                const lat=parseFloat(card.dataset.lat), lng=parseFloat(card.dataset.lng);
-                map.setView([lat,lng],16);
-                stationMarkers.forEach(sm=>{
-                    if(sm.marker.getLatLng().lat===lat && sm.marker.getLatLng().lng===lng) 
+        document.querySelectorAll('.station-card').forEach(card => {
+            card.addEventListener('click', e => {
+                if (e.target.tagName === 'A') return;
+                const lat = parseFloat(card.dataset.lat);
+                const lng = parseFloat(card.dataset.lng);
+                map.setView([lat, lng], 16);
+                stationMarkers.forEach(sm => {
+                    if (sm.marker.getLatLng().lat === lat && sm.marker.getLatLng().lng === lng)
                         sm.marker.openPopup();
                 });
             });
         });
 
-        // THEME TOGGLE
-        const themeBtn=document.getElementById('toggleTheme');
-        const savedTheme = localStorage.getItem('theme');
-        if(savedTheme === 'light'){
-            document.body.classList.add('light'); 
-            themeBtn.textContent='☀️';
-        } else {
-            themeBtn.textContent='🌙';
-        }
-        
-        themeBtn.addEventListener('click',()=>{
-            document.body.classList.toggle('light');
-            if(document.body.classList.contains('light')){
-                localStorage.setItem('theme','light');
-                themeBtn.textContent='☀️';
+        // ===== THEME TOGGLE FUNCTIONALITY =====
+        const toggleButton = document.getElementById("toggleTheme");
+        if (toggleButton) {
+            const savedTheme = localStorage.getItem("theme");
+            if (savedTheme === "light") {
+                document.body.classList.add("light");
+                toggleButton.textContent = "☀️";
             } else {
-                localStorage.setItem('theme','dark');
-                themeBtn.textContent='🌙';
+                toggleButton.textContent = "🌙";
             }
-        });
-    </script>
 
-    <!-- BOOTSTRAP JS -->
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+            toggleButton.addEventListener("click", () => {
+                document.body.classList.toggle("light");
+                const isLight = document.body.classList.contains("light");
+                toggleButton.textContent = isLight ? "☀️" : "🌙";
+                localStorage.setItem("theme", isLight ? "light" : "dark");
+                
+                const mobileBtn = document.getElementById("mobileThemeToggle");
+                if (mobileBtn) {
+                    mobileBtn.textContent = isLight ? "☀️" : "🌙";
+                }
+            });
+        }
+
+        const mobileToggleButton = document.getElementById("mobileThemeToggle");
+        if (mobileToggleButton) {
+            const savedTheme = localStorage.getItem("theme");
+            if (savedTheme === "light") {
+                document.body.classList.add("light");
+                mobileToggleButton.textContent = "☀️";
+            } else {
+                mobileToggleButton.textContent = "🌙";
+            }
+
+            mobileToggleButton.addEventListener("click", () => {
+                document.body.classList.toggle("light");
+                const isLight = document.body.classList.contains("light");
+                mobileToggleButton.textContent = isLight ? "☀️" : "🌙";
+                localStorage.setItem("theme", isLight ? "light" : "dark");
+                
+                const desktopBtn = document.getElementById("toggleTheme");
+                if (desktopBtn) {
+                    desktopBtn.textContent = isLight ? "☀️" : "🌙";
+                }
+            });
+        }
+
+        // Prevent zoom on double tap (iOS)
+        let lastTouchEnd = 0;
+        document.addEventListener('touchend', function (event) {
+            const now = (new Date()).getTime();
+            if (now - lastTouchEnd <= 300) {
+                event.preventDefault();
+            }
+            lastTouchEnd = now;
+        }, false);
+    </script>
+    
+    <script src="../js/clean-url.js"></script>
 </body>
 </html>
