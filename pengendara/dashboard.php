@@ -73,11 +73,54 @@ try {
 <title>Dashboard - E-Station</title>
 <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-<link rel="stylesheet" href="../css/pengendara-style.css">
-<link rel="stylesheet" href="../css/alert.css">
+<link rel="stylesheet" href="../css/pengendara-style.css?v=<?= time(); ?>">
+<link rel="stylesheet" href="../css/alert.css?v=<?= time(); ?>">
 <style>
-    /* Fix untuk tombol tambah kendaraan di mobile */
+    /* CRITICAL FIX - Stats Grid Mobile FULL SIZE */
     @media (max-width: 768px) {
+        /* Force stats grid to use CSS Grid dengan ukuran BESAR */
+        .stats-grid {
+            display: grid !important;
+            grid-template-columns: repeat(2, 1fr) !important;
+            gap: 16px !important;
+            margin-bottom: 24px !important;
+            padding: 0 !important;
+            width: 100%;
+        }
+        
+        .stat-card {
+            display: flex !important;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 140px !important;
+            padding: 32px 20px !important;
+            box-sizing: border-box;
+            width: 100%;
+            border-radius: 20px !important;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+        }
+        
+        .stat-card i {
+            font-size: 2.5rem !important;
+            margin-bottom: 12px !important;
+            filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.3));
+        }
+        
+        .stat-card h4 {
+            font-size: 2rem !important;
+            font-weight: 800 !important;
+            margin: 10px 0 6px 0 !important;
+            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+        }
+        
+        .stat-card small {
+            font-size: 0.9rem !important;
+            font-weight: 600 !important;
+            letter-spacing: 0.3px;
+        }
+        
+        /* Fix button tambah kendaraan */
         .btn-add-vehicle-mobile {
             padding: 10px 18px !important;
             font-size: 0.875rem !important;
@@ -85,10 +128,25 @@ try {
             display: inline-flex !important;
             align-items: center !important;
             gap: 6px !important;
+            justify-content: center !important;
         }
         
         .btn-add-vehicle-mobile i {
             font-size: 0.85rem !important;
+        }
+        
+        /* Pastikan row tidak menggunakan flex */
+        .row {
+            display: block !important;
+        }
+        
+        /* Full width cards */
+        .col-md-4,
+        .col-md-6 {
+            width: 100% !important;
+            max-width: 100% !important;
+            padding: 0 !important;
+            flex: none !important;
         }
     }
 </style>
@@ -134,22 +192,22 @@ try {
 
     <!-- MOBILE QUICK STATS -->
     <div class="stats-grid d-md-none">
-        <div class="stat-card" style="background: linear-gradient(135deg, rgba(124, 58, 237, 0.2), rgba(168, 85, 247, 0.15));">
+        <div class="stat-card" style="background: linear-gradient(135deg, rgba(124, 58, 237, 0.2), rgba(168, 85, 247, 0.15)); border: 1px solid rgba(168, 85, 247, 0.3);">
             <i class="fas fa-bolt" style="color: #a855f7;"></i>
             <h4><?= count($transaksi_terbaru); ?></h4>
             <small>Transaksi</small>
         </div>
-        <div class="stat-card" style="background: linear-gradient(135deg, rgba(239, 68, 68, 0.2), rgba(220, 38, 38, 0.15));">
+        <div class="stat-card" style="background: linear-gradient(135deg, rgba(239, 68, 68, 0.2), rgba(220, 38, 38, 0.15)); border: 1px solid rgba(239, 68, 68, 0.3);">
             <i class="fas fa-car" style="color: #ef4444;"></i>
             <h4><?= $kendaraan ? '1' : '0'; ?></h4>
             <small>Kendaraan</small>
         </div>
-        <div class="stat-card" style="background: linear-gradient(135deg, rgba(6, 182, 212, 0.2), rgba(8, 145, 178, 0.15));">
+        <div class="stat-card" style="background: linear-gradient(135deg, rgba(6, 182, 212, 0.2), rgba(8, 145, 178, 0.15)); border: 1px solid rgba(6, 182, 212, 0.3);">
             <i class="fas fa-bell" style="color: #06b6d4;"></i>
             <h4><?= count($notifikasi); ?></h4>
             <small>Notifikasi</small>
         </div>
-        <div class="stat-card" style="background: linear-gradient(135deg, rgba(16, 185, 129, 0.2), rgba(5, 150, 105, 0.15));">
+        <div class="stat-card" style="background: linear-gradient(135deg, rgba(16, 185, 129, 0.2), rgba(5, 150, 105, 0.15)); border: 1px solid rgba(16, 185, 129, 0.3);">
             <i class="fas fa-charging-station" style="color: #10b981;"></i>
             <h4>Aktif</h4>
             <small>Status</small>
@@ -379,6 +437,15 @@ document.addEventListener('touchend', function (event) {
     }
     lastTouchEnd = now;
 }, false);
+
+// Debug: Log stats grid layout
+if (window.innerWidth <= 768) {
+    const statsGrid = document.querySelector('.stats-grid');
+    if (statsGrid) {
+        console.log('Stats Grid Display:', window.getComputedStyle(statsGrid).display);
+        console.log('Stats Grid Template:', window.getComputedStyle(statsGrid).gridTemplateColumns);
+    }
+}
 </script>
 
 </body>
