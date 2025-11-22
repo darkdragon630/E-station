@@ -1,6 +1,6 @@
 <?php
 session_start();
-require_once '../xonfig/koneksi.php';
+require_once '../config/koneksi.php';
 require_once '../pesan/alerts.php';
 
 // Cek authentication
