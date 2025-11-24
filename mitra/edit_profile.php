@@ -1,3 +1,65 @@
+<?php
+session_start();
+require_once '../config/koneksi.php';
+require_once '../pesan/alerts.php';
+
+// Cek authentication
+if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'mitra') {
+    header('Location: ../auth/login.php');
+    exit;
+}
+
+$id_mitra = $_SESSION['user_id'];
+
+// Ambil data mitra lengkap
+try {
+    $stmt = $koneksi->prepare("
+        SELECT 
+            nama_mitra, 
+            email, 
+            no_telepon, 
+            alamat, 
+            status, 
+            email_terverifikasi,
+            created_at
+        FROM mitra 
+        WHERE id_mitra = ?
+    ");
+    $stmt->execute([$id_mitra]);
+    $dataMitra = $stmt->fetch(PDO::FETCH_ASSOC);
+    
+    if (!$dataMitra) {
+        set_flash_message('error', 'Data mitra tidak ditemukan!');
+        header('Location: dashboard.php');
+        exit;
+    }
+} catch (PDOException $e) {
+    set_flash_message('error', 'Gagal mengambil data: ' . $e->getMessage());
+    header('Location: dashboard.php');
+    exit;
+}
+
+// Format tanggal bergabung
+$tanggalBergabung = '-';
+if (!empty($dataMitra['created_at'])) {
+    $date = new DateTime($dataMitra['created_at']);
+    $tanggalBergabung = $date->format('d M Y');
+}
+
+// Status badge class
+$statusClass = 'status-pending';
+$statusText = 'Pending';
+if ($dataMitra['status'] == 'disetujui') {
+    $statusClass = 'status-approved';
+    $statusText = 'Disetujui';
+} elseif ($dataMitra['status'] == 'ditolak') {
+    $statusClass = 'status-rejected';
+    $statusText = 'Ditolak';
+}
+
+// Email verification status
+$emailVerified = $dataMitra['email_terverifikasi'] == 1;
+?>
 <!doctype html>
 <html lang="id">
 <head>
@@ -310,7 +372,7 @@
 </div>
 
 <!-- DESKTOP NAVBAR -->
-
+<?php include '../components/navbar-mitra.php'; ?>
 
 <!-- MOBILE HEADER -->
 <div class="mobile-header d-md-none">
@@ -328,6 +390,7 @@
 <!-- CONTENT -->
 <div class="container mt-4 mb-5">
     
+    <?php tampilkan_alert(); ?>
     
     <!-- Back Button Desktop -->
     <a href="dashboard.php" class="btn-back mb-4 d-none d-md-inline-flex">
@@ -356,7 +419,7 @@
                     </div>
                     <div class="text">
                         <small>Status Akun</small>
-                        <span class="status-badge status-pending">Pending</span>
+                        <span class="status-badge <?= $statusClass; ?>"><?= $statusText; ?></span>
                     </div>
                 </div>
                 <div class="info-item">
@@ -365,7 +428,13 @@
                     </div>
                     <div class="text">
                         <small>Email Terverifikasi</small>
-                        <span><i class="fas fa-times-circle text-danger"></i> Belum</span>
+                        <span>
+                            <?php if ($emailVerified): ?>
+                                <i class="fas fa-check-circle text-success"></i> Sudah
+                            <?php else: ?>
+                                <i class="fas fa-times-circle text-danger"></i> Belum
+                            <?php endif; ?>
+                        </span>
                     </div>
                 </div>
                 <div class="info-item">
@@ -374,7 +443,7 @@
                     </div>
                     <div class="text">
                         <small>Bergabung Sejak</small>
-                        <span>-</span>
+                        <span><?= htmlspecialchars($tanggalBergabung); ?></span>
                     </div>
                 </div>
             </div>
@@ -389,32 +458,56 @@
                 
                 <div class="mb-3">
                     <label for="nama_mitra" class="form-label">Nama Mitra <span class="text-danger">*</span></label>
-                    <input type="text" class="form-control" id="nama_mitra" name="nama_mitra" placeholder="Masukkan nama lengkap" required>
+                    <input type="text" 
+                           class="form-control" 
+                           id="nama_mitra" 
+                           name="nama_mitra" 
+                           value="<?= htmlspecialchars($dataMitra['nama_mitra']); ?>"
+                           placeholder="Masukkan nama lengkap" 
+                           required>
                     <div class="form-text">Nama lengkap sesuai identitas</div>
                 </div>
 
                 <div class="mb-3">
                     <label for="email" class="form-label">Email <span class="text-danger">*</span></label>
-                    <input type="email" class="form-control" id="email" name="email" placeholder="email@example.com" readonly>
+                    <input type="email" 
+                           class="form-control" 
+                           id="email" 
+                           name="email" 
+                           value="<?= htmlspecialchars($dataMitra['email']); ?>"
+                           readonly>
                     <div class="form-text"><i class="fas fa-lock me-1"></i> Email tidak dapat diubah</div>
                 </div>
 
                 <div class="row">
                     <div class="col-md-6 mb-3">
                         <label for="no_telepon" class="form-label">Nomor Telepon</label>
-                        <input type="tel" class="form-control" id="no_telepon" name="no_telepon" placeholder="08123456789">
+                        <input type="tel" 
+                               class="form-control" 
+                               id="no_telepon" 
+                               name="no_telepon" 
+                               value="<?= htmlspecialchars($dataMitra['no_telepon'] ?? ''); ?>"
+                               placeholder="08123456789">
                         <div class="form-text">Format: 08xxxxxxxxxx</div>
                     </div>
                     <div class="col-md-6 mb-3">
                         <label for="status" class="form-label">Status Akun</label>
-                        <input type="text" class="form-control" id="status" value="Pending" readonly>
+                        <input type="text" 
+                               class="form-control" 
+                               id="status" 
+                               value="<?= $statusText; ?>" 
+                               readonly>
                         <div class="form-text"><i class="fas fa-lock me-1"></i> Dikelola oleh admin</div>
                     </div>
                 </div>
 
                 <div class="mb-0">
                     <label for="alamat" class="form-label">Alamat Lengkap</label>
-                    <textarea class="form-control" id="alamat" name="alamat" rows="3" placeholder="Jl. Contoh No. 123, Kelurahan, Kecamatan, Kota, Provinsi"></textarea>
+                    <textarea class="form-control" 
+                              id="alamat" 
+                              name="alamat" 
+                              rows="3" 
+                              placeholder="Jl. Contoh No. 123, Kelurahan, Kecamatan, Kota, Provinsi"><?= htmlspecialchars($dataMitra['alamat'] ?? ''); ?></textarea>
                     <div class="form-text">Alamat lengkap sesuai KTP atau domisili</div>
                 </div>
             </div>
@@ -433,7 +526,7 @@
                                 <i class="fas fa-eye"></i>
                             </button>
                         </div>
-                        <div class="form-text">Minimal 6 karakter</div>
+                        <div class="form-text">Minimal 8 karakter</div>
                     </div>
                     <div class="col-md-6 mb-3">
                         <label for="konfirmasi_password" class="form-label">Konfirmasi Password</label>
@@ -468,6 +561,7 @@
 
 <!-- SCRIPTS -->
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<script src="../js/clean-url.js"></script>
 <script>
 // Theme Toggle
 function initTheme(btnId) {
@@ -532,9 +626,9 @@ document.getElementById('profileForm').addEventListener('submit', function(e) {
     
     // Validasi password
     if (passwordBaru) {
-        if (passwordBaru.length < 6) {
+        if (passwordBaru.length < 8) {
             e.preventDefault();
-            alert('⚠️ Password minimal 6 karakter!');
+            alert('⚠️ Password minimal 8 karakter!');
             return;
         }
         if (passwordBaru !== konfirmasi) {

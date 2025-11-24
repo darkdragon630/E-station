@@ -15,7 +15,7 @@ header("Referrer-Policy: no-referrer");
 // ==================== AUTHENTICATION ====================
 function checkAdminAuth() {
     if (!isset($_SESSION['user_id']) || $_SESSION['role'] != 'admin') {
-        redirect_with_alert('../auth/login.php', 'error', 'unauthorized');
+        set_flash_message('../auth/login.php', 'error', 'unauthorized');
     }
 }
 
@@ -27,7 +27,8 @@ function getDashboardStatistics($koneksi) {
             'mitra' => 0,
             'transaksi' => 0,
             'stasiun' => 0,
-            'pending' => 0
+            'pending' => 0,
+            'stok_baterai' => 0
         ];
         
         // Total pengendara
@@ -50,6 +51,10 @@ function getDashboardStatistics($koneksi) {
         $stmt = $koneksi->query("SELECT COUNT(*) AS total FROM stasiun_pengisian WHERE status = 'pending'");
         $stats['pending'] = $stmt->fetch(PDO::FETCH_ASSOC)['total'];
         
+        // Total stok baterai
+        $stmt = $koneksi->query("SELECT COALESCE(SUM(jumlah), 0) AS total FROM stok_baterai");
+        $stats['stok_baterai'] = $stmt->fetch(PDO::FETCH_ASSOC)['total'];
+        
         return $stats;
     } catch (PDOException $e) {
         error_log("Error fetching dashboard stats: " . $e->getMessage());
@@ -58,7 +63,8 @@ function getDashboardStatistics($koneksi) {
             'mitra' => 0,
             'transaksi' => 0,
             'stasiun' => 0,
-            'pending' => 0
+            'pending' => 0,
+            'stok_baterai' => 0
         ];
     }
 }
@@ -100,13 +106,13 @@ $stats = getDashboardStatistics($koneksi);
             <div class="notification">
                 <i class="fas fa-bell"></i>
                 <?php if ($stats['pending'] > 0): ?>
-                    <span class="badge"><?php echo $stats['pending']; ?></span>
+                    <span class="badge"><?= $stats['pending']; ?></span>
                 <?php endif; ?>
             </div>
             <div class="profile">
-                <div class="avatar"><?php echo strtoupper(substr($nama_admin, 0, 2)); ?></div>
+                <div class="avatar"><?= strtoupper(substr($nama_admin, 0, 2)); ?></div>
                 <div>
-                    <div style="font-weight: 600; font-size: 14px;"><?php echo htmlspecialchars($nama_admin); ?></div>
+                    <div style="font-weight: 600; font-size: 14px;"><?= htmlspecialchars($nama_admin); ?></div>
                     <div style="font-size: 12px; color: #999;">Administrator</div>
                 </div>
             </div>
@@ -115,7 +121,7 @@ $stats = getDashboardStatistics($koneksi);
     
     <!-- Welcome Card -->
     <div class="welcome-card">
-        <h4><i class="fas fa-hand-wave me-2"></i>Selamat Datang, <?php echo htmlspecialchars($nama_admin); ?>!</h4>
+        <h4><i class="fas fa-hand-wave me-2"></i>Selamat Datang, <?= htmlspecialchars($nama_admin); ?>!</h4>
         <p>Berikut adalah ringkasan sistem E-Station hari ini</p>
     </div>
     
@@ -126,7 +132,7 @@ $stats = getDashboardStatistics($koneksi);
         <div class="notif-item">
             <div>
                 <i class="fas fa-clock text-warning me-2"></i>
-                <strong><?php echo $stats['pending']; ?> Stasiun</strong> menunggu persetujuan
+                <strong><?= $stats['pending']; ?> Stasiun</strong> menunggu persetujuan
             </div>
             <a href="approval_stasiun.php" class="btn btn-sm btn-primary">
                 <i class="fas fa-eye me-1"></i>Lihat
@@ -142,7 +148,7 @@ $stats = getDashboardStatistics($koneksi);
                 <i class="fas fa-motorcycle"></i>
             </div>
             <div class="stat-info">
-                <h3><?php echo number_format($stats['pengendara']); ?></h3>
+                <h3><?= number_format($stats['pengendara']); ?></h3>
                 <p>Pengendara Terdaftar</p>
             </div>
         </div>
@@ -152,7 +158,7 @@ $stats = getDashboardStatistics($koneksi);
                 <i class="fas fa-store"></i>
             </div>
             <div class="stat-info">
-                <h3><?php echo number_format($stats['mitra']); ?></h3>
+                <h3><?= number_format($stats['mitra']); ?></h3>
                 <p>Mitra Terdaftar</p>
             </div>
         </div>
@@ -162,7 +168,7 @@ $stats = getDashboardStatistics($koneksi);
                 <i class="fas fa-exchange-alt"></i>
             </div>
             <div class="stat-info">
-                <h3><?php echo number_format($stats['transaksi']); ?></h3>
+                <h3><?= number_format($stats['transaksi']); ?></h3>
                 <p>Total Transaksi</p>
             </div>
         </div>
@@ -172,8 +178,28 @@ $stats = getDashboardStatistics($koneksi);
                 <i class="fas fa-charging-station"></i>
             </div>
             <div class="stat-info">
-                <h3><?php echo number_format($stats['stasiun']); ?></h3>
+                <h3><?= number_format($stats['stasiun']); ?></h3>
                 <p>Stasiun Aktif</p>
+            </div>
+        </div>
+        
+        <div class="stat-card">
+            <div class="stat-icon danger">
+                <i class="fas fa-battery-three-quarters"></i>
+            </div>
+            <div class="stat-info">
+                <h3><?= number_format($stats['stok_baterai']); ?></h3>
+                <p>Total Stok Baterai</p>
+            </div>
+        </div>
+        
+        <div class="stat-card">
+            <div class="stat-icon secondary">
+                <i class="fas fa-clock"></i>
+            </div>
+            <div class="stat-info">
+                <h3><?= number_format($stats['pending']); ?></h3>
+                <p>Stasiun Pending</p>
             </div>
         </div>
     </div>
@@ -195,6 +221,9 @@ $stats = getDashboardStatistics($koneksi);
                         </a>
                         <a href="approval_stasiun.php" class="btn btn-outline-warning">
                             <i class="fas fa-check-circle me-2"></i>Approval Stasiun
+                        </a>
+                        <a href="stok_baterai.php" class="btn btn-outline-danger">
+                            <i class="fas fa-battery-three-quarters me-2"></i>Kelola Stok Baterai
                         </a>
                         <a href="transaksi.php" class="btn btn-outline-info">
                             <i class="fas fa-exchange-alt me-2"></i>Lihat Transaksi
@@ -225,7 +254,7 @@ $stats = getDashboardStatistics($koneksi);
                     <div class="info-item mb-3">
                         <div class="d-flex justify-content-between align-items-center">
                             <span><i class="fas fa-clock text-warning me-2"></i>Waktu Server</span>
-                            <span class="text-muted"><?php echo date('d M Y, H:i'); ?></span>
+                            <span class="text-muted"><?= date('d M Y, H:i'); ?></span>
                         </div>
                     </div>
                     <div class="info-item">
