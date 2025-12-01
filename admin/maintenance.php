@@ -6,35 +6,12 @@ require_once "../pesan/alerts.php";
 // ==================== AUTHENTICATION ====================
 function checkAdminAuth() {
     if (!isset($_SESSION['user_id']) || $_SESSION['role'] != 'admin') {
-        set_flash_message('../auth/login.php', 'error', 'unauthorized');
+        header("Location: ../auth/login.php?error=unauthorized");
+        exit();
     }
 }
 
 // ==================== MAINTENANCE FUNCTIONS ====================
-function getMaintenanceStatus($koneksi) {
-    try {
-        $stmt = $koneksi->prepare("SELECT * FROM jadwal_maintenance ORDER BY id_maintenance DESC LIMIT 1");
-        $result = $stmt->fetch(PDO::FETCH_ASSOC);
-        
-        if ($result) {
-            return $result;
-        }
-        
-        return [
-            'id_maintenance' => 0,
-            'status' => 'selesai',
-            'tanggal_mulai' => null,
-            'tanggal_selesai' => null,
-            'keterangan' => '',
-            'id_admin' => null,
-            'id_stasiun' => null
-        ];
-    } catch (PDOException $e) {
-        error_log("Get maintenance status error: " . $e->getMessage());
-        return [];
-    }
-}
-
 function createMaintenance($koneksi, $data) {
     try {
         $query = "INSERT INTO jadwal_maintenance 
@@ -51,6 +28,12 @@ function createMaintenance($koneksi, $data) {
             ':status' => $data['status']
         ]);
         
+        // Update status operasional stasiun jika maintenance dimulai
+        if ($result && $data['status'] === 'berlangsung') {
+            $updateStmt = $koneksi->prepare("UPDATE stasiun_pengisian SET status_operasional = 'maintenance' WHERE id_stasiun = :id");
+            $updateStmt->execute([':id' => $data['id_stasiun']]);
+        }
+        
         return $result;
     } catch (PDOException $e) {
         error_log("Create maintenance error: " . $e->getMessage());
@@ -60,13 +43,37 @@ function createMaintenance($koneksi, $data) {
 
 function updateMaintenanceStatus($koneksi, $id_maintenance, $status) {
     try {
+        // Get stasiun ID first
+        $stmt = $koneksi->prepare("SELECT id_stasiun FROM jadwal_maintenance WHERE id_maintenance = :id");
+        $stmt->execute([':id' => $id_maintenance]);
+        $maintenance = $stmt->fetch(PDO::FETCH_ASSOC);
+        
+        // Update maintenance status
         $query = "UPDATE jadwal_maintenance SET status = :status WHERE id_maintenance = :id";
         $stmt = $koneksi->prepare($query);
-        
-        return $stmt->execute([
+        $result = $stmt->execute([
             ':status' => $status,
             ':id' => $id_maintenance
         ]);
+        
+        // Update status operasional stasiun
+        if ($result && $maintenance) {
+            $newStatus = 'aktif'; // Default ke aktif
+            
+            if ($status === 'berlangsung') {
+                $newStatus = 'maintenance';
+            } elseif ($status === 'selesai') {
+                $newStatus = 'aktif';
+            }
+            
+            $updateStmt = $koneksi->prepare("UPDATE stasiun_pengisian SET status_operasional = :status WHERE id_stasiun = :id");
+            $updateStmt->execute([
+                ':status' => $newStatus,
+                ':id' => $maintenance['id_stasiun']
+            ]);
+        }
+        
+        return $result;
     } catch (PDOException $e) {
         error_log("Update maintenance status error: " . $e->getMessage());
         return false;
@@ -75,7 +82,7 @@ function updateMaintenanceStatus($koneksi, $id_maintenance, $status) {
 
 function getStasiunList($koneksi) {
     try {
-        $stmt = $koneksi->query("SELECT id_stasiun, nama_stasiun, lokasi FROM stasiun_pengisian WHERE status = 'disetujui' ORDER BY nama_stasiun");
+        $stmt = $koneksi->query("SELECT id_stasiun, nama_stasiun, alamat FROM stasiun_pengisian WHERE status = 'disetujui' ORDER BY nama_stasiun");
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
     } catch (PDOException $e) {
         error_log("Get stasiun list error: " . $e->getMessage());
@@ -85,10 +92,10 @@ function getStasiunList($koneksi) {
 
 function getMaintenanceList($koneksi, $limit = 10) {
     try {
-        $query = "SELECT m.*, s.nama_stasiun, s.lokasi, a.nama as admin_nama
+        $query = "SELECT m.*, s.nama_stasiun, s.alamat, u.nama as admin_nama
                   FROM jadwal_maintenance m
                   LEFT JOIN stasiun_pengisian s ON m.id_stasiun = s.id_stasiun
-                  LEFT JOIN admin a ON m.id_admin = a.id_admin
+                  LEFT JOIN users u ON m.id_admin = u.id AND u.role = 'admin'
                   ORDER BY m.tanggal_mulai DESC
                   LIMIT :limit";
         
@@ -107,19 +114,15 @@ function getMaintenanceStats($koneksi) {
     try {
         $stats = [];
         
-        // Total maintenance
         $stmt = $koneksi->query("SELECT COUNT(*) as total FROM jadwal_maintenance");
         $stats['total'] = $stmt->fetch(PDO::FETCH_ASSOC)['total'];
         
-        // Terjadwal
         $stmt = $koneksi->query("SELECT COUNT(*) as total FROM jadwal_maintenance WHERE status = 'terjadwal'");
         $stats['terjadwal'] = $stmt->fetch(PDO::FETCH_ASSOC)['total'];
         
-        // Berlangsung
         $stmt = $koneksi->query("SELECT COUNT(*) as total FROM jadwal_maintenance WHERE status = 'berlangsung'");
         $stats['berlangsung'] = $stmt->fetch(PDO::FETCH_ASSOC)['total'];
         
-        // Selesai
         $stmt = $koneksi->query("SELECT COUNT(*) as total FROM jadwal_maintenance WHERE status = 'selesai'");
         $stats['selesai'] = $stmt->fetch(PDO::FETCH_ASSOC)['total'];
         
@@ -151,9 +154,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 ];
                 
                 if (createMaintenance($koneksi, $data)) {
-                    alert_success("Jadwal maintenance berhasil ditambahkan!");
+                    $_SESSION['alert_success'] = "Jadwal maintenance berhasil ditambahkan!";
                 } else {
-                    alert_error("Gagal menambahkan jadwal maintenance");
+                    $_SESSION['alert_danger'] = "Gagal menambahkan jadwal maintenance";
                 }
                 
                 header("Location: maintenance.php");
@@ -165,9 +168,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 $new_status = $_POST['new_status'] ?? '';
                 
                 if (updateMaintenanceStatus($koneksi, $id_maintenance, $new_status)) {
-                    alert_success("Status maintenance berhasil diperbarui!");
+                    $_SESSION['alert_success'] = "Status maintenance berhasil diperbarui!";
                 } else {
-                    set_error_handler("Gagal memperbarui status maintenance");
+                    $_SESSION['alert_danger'] = "Gagal memperbarui status maintenance";
                 }
                 
                 header("Location: maintenance.php");
@@ -258,7 +261,7 @@ $stats = getMaintenanceStats($koneksi);
             <i class="fas fa-plus-circle me-2"></i>Tambah Jadwal Maintenance
         </div>
         <div class="card-body">
-            <form method="POST" class="row g-3">
+            <form method="POST" class="row g-3" onsubmit="return validateForm()">
                 <input type="hidden" name="action" value="create">
                 
                 <div class="col-md-6">
@@ -267,7 +270,10 @@ $stats = getMaintenanceStats($koneksi);
                         <option value="">-- Pilih Stasiun --</option>
                         <?php foreach ($stasiun_list as $stasiun): ?>
                             <option value="<?php echo $stasiun['id_stasiun']; ?>">
-                                <?php echo htmlspecialchars($stasiun['nama_stasiun']); ?> - <?php echo htmlspecialchars($stasiun['lokasi']); ?>
+                                <?php echo htmlspecialchars($stasiun['nama_stasiun']); ?>
+                                <?php if (!empty($stasiun['alamat'])): ?>
+                                    - <?php echo htmlspecialchars(substr($stasiun['alamat'], 0, 40)); ?><?php echo strlen($stasiun['alamat']) > 40 ? '...' : ''; ?>
+                                <?php endif; ?>
                             </option>
                         <?php endforeach; ?>
                     </select>
@@ -276,12 +282,12 @@ $stats = getMaintenanceStats($koneksi);
                 
                 <div class="col-md-3">
                     <label class="form-label">Tanggal Mulai <span class="text-danger">*</span></label>
-                    <input type="datetime-local" name="tanggal_mulai" class="form-control" required>
+                    <input type="datetime-local" name="tanggal_mulai" id="tanggal_mulai" class="form-control" required>
                 </div>
                 
                 <div class="col-md-3">
                     <label class="form-label">Tanggal Selesai <span class="text-danger">*</span></label>
-                    <input type="datetime-local" name="tanggal_selesai" class="form-control" required>
+                    <input type="datetime-local" name="tanggal_selesai" id="tanggal_selesai" class="form-control" required>
                 </div>
                 
                 <div class="col-12">
@@ -335,7 +341,7 @@ $stats = getMaintenanceStats($koneksi);
                                     <td><?php echo $index + 1; ?></td>
                                     <td>
                                         <strong><?php echo htmlspecialchars($maintenance['nama_stasiun'] ?? '-'); ?></strong><br>
-                                        <small class="text-muted"><?php echo htmlspecialchars($maintenance['lokasi'] ?? '-'); ?></small>
+                                        <small class="text-muted"><?php echo htmlspecialchars($maintenance['alamat'] ?? '-'); ?></small>
                                     </td>
                                     <td><?php echo date('d M Y H:i', strtotime($maintenance['tanggal_mulai'])); ?></td>
                                     <td><?php echo date('d M Y H:i', strtotime($maintenance['tanggal_selesai'])); ?></td>
@@ -395,41 +401,39 @@ $stats = getMaintenanceStats($koneksi);
                                         <div class="modal-content">
                                             <div class="modal-header">
                                                 <h5 class="modal-title"><i class="fas fa-info-circle me-2"></i>Detail Maintenance</h5>
-                                                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                                                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                                             </div>
-                                            <div class="modal-body p-0">
-                                                <div class="detail-item">
-                                                    <div class="detail-label">Stasiun</div>
-                                                    <div class="detail-value"><?php echo htmlspecialchars($maintenance['nama_stasiun'] ?? '-'); ?></div>
+                                            <div class="modal-body">
+                                                <div class="mb-3">
+                                                    <strong>Stasiun:</strong><br>
+                                                    <?php echo htmlspecialchars($maintenance['nama_stasiun'] ?? '-'); ?>
                                                 </div>
-                                                <div class="detail-item">
-                                                    <div class="detail-label">Lokasi</div>
-                                                    <div class="detail-value"><?php echo htmlspecialchars($maintenance['lokasi'] ?? '-'); ?></div>
+                                                <div class="mb-3">
+                                                    <strong>Lokasi:</strong><br>
+                                                    <?php echo htmlspecialchars($maintenance['alamat'] ?? '-'); ?>
                                                 </div>
-                                                <div class="detail-item">
-                                                    <div class="detail-label">Tanggal Mulai</div>
-                                                    <div class="detail-value"><?php echo date('d F Y, H:i', strtotime($maintenance['tanggal_mulai'])); ?></div>
+                                                <div class="mb-3">
+                                                    <strong>Tanggal Mulai:</strong><br>
+                                                    <?php echo date('d F Y, H:i', strtotime($maintenance['tanggal_mulai'])); ?>
                                                 </div>
-                                                <div class="detail-item">
-                                                    <div class="detail-label">Tanggal Selesai</div>
-                                                    <div class="detail-value"><?php echo date('d F Y, H:i', strtotime($maintenance['tanggal_selesai'])); ?></div>
+                                                <div class="mb-3">
+                                                    <strong>Tanggal Selesai:</strong><br>
+                                                    <?php echo date('d F Y, H:i', strtotime($maintenance['tanggal_selesai'])); ?>
                                                 </div>
-                                                <div class="detail-item">
-                                                    <div class="detail-label">Keterangan</div>
-                                                    <div class="detail-value"><?php echo nl2br(htmlspecialchars($maintenance['keterangan'])); ?></div>
+                                                <div class="mb-3">
+                                                    <strong>Keterangan:</strong><br>
+                                                    <?php echo nl2br(htmlspecialchars($maintenance['keterangan'])); ?>
                                                 </div>
-                                                <div class="detail-item">
-                                                    <div class="detail-label">Admin</div>
-                                                    <div class="detail-value"><?php echo htmlspecialchars($maintenance['admin_nama'] ?? '-'); ?></div>
+                                                <div class="mb-3">
+                                                    <strong>Admin:</strong><br>
+                                                    <?php echo htmlspecialchars($maintenance['admin_nama'] ?? '-'); ?>
                                                 </div>
-                                                <div class="detail-item">
-                                                    <div class="detail-label">Status</div>
-                                                    <div class="detail-value">
-                                                        <span class="badge bg-<?php echo $badge_class; ?>">
-                                                            <i class="fas <?php echo $icon; ?> me-1"></i>
-                                                            <?php echo ucfirst($maintenance['status']); ?>
-                                                        </span>
-                                                    </div>
+                                                <div class="mb-3">
+                                                    <strong>Status:</strong><br>
+                                                    <span class="badge bg-<?php echo $badge_class; ?>">
+                                                        <i class="fas <?php echo $icon; ?> me-1"></i>
+                                                        <?php echo ucfirst($maintenance['status']); ?>
+                                                    </span>
                                                 </div>
                                             </div>
                                             <div class="modal-footer">
@@ -455,7 +459,11 @@ $stats = getMaintenanceStats($koneksi);
 <script>
 function updateStatus(id, status) {
     const action = status === 'berlangsung' ? 'memulai' : 'menyelesaikan';
-    if (confirm(`Apakah Anda yakin ingin ${action} maintenance ini?`)) {
+    const message = status === 'berlangsung' 
+        ? 'Apakah Anda yakin ingin memulai maintenance ini?\n\nStatus stasiun akan diubah menjadi Maintenance.' 
+        : 'Apakah Anda yakin ingin menyelesaikan maintenance ini?\n\nStatus stasiun akan diubah menjadi Aktif kembali.';
+    
+    if (confirm(message)) {
         const form = document.createElement('form');
         form.method = 'POST';
         
@@ -482,20 +490,40 @@ function updateStatus(id, status) {
     }
 }
 
-// Validate date inputs
+// Validate form
+function validateForm() {
+    const tanggalMulai = document.getElementById('tanggal_mulai').value;
+    const tanggalSelesai = document.getElementById('tanggal_selesai').value;
+    
+    if (!tanggalMulai || !tanggalSelesai) {
+        alert('Tanggal mulai dan selesai harus diisi!');
+        return false;
+    }
+    
+    if (tanggalSelesai <= tanggalMulai) {
+        alert('Tanggal selesai harus setelah tanggal mulai!');
+        return false;
+    }
+    
+    return true;
+}
+
+// Set min date for datetime inputs
 document.addEventListener('DOMContentLoaded', function() {
-    const tanggalMulai = document.querySelector('input[name="tanggal_mulai"]');
-    const tanggalSelesai = document.querySelector('input[name="tanggal_selesai"]');
+    const tanggalMulai = document.getElementById('tanggal_mulai');
+    const tanggalSelesai = document.getElementById('tanggal_selesai');
     
     if (tanggalMulai && tanggalSelesai) {
+        // Set min date to now
+        const now = new Date();
+        now.setMinutes(now.getMinutes() - now.getTimezoneOffset());
+        const minDate = now.toISOString().slice(0, 16);
+        tanggalMulai.min = minDate;
+        
         tanggalMulai.addEventListener('change', function() {
             tanggalSelesai.min = this.value;
-        });
-        
-        tanggalSelesai.addEventListener('change', function() {
-            if (this.value < tanggalMulai.value) {
-                alert('Tanggal selesai harus setelah tanggal mulai');
-                this.value = '';
+            if (tanggalSelesai.value && tanggalSelesai.value < this.value) {
+                tanggalSelesai.value = '';
             }
         });
     }

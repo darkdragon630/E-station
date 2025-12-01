@@ -617,6 +617,6 @@ document.getElementById('stationForm').addEventListener('submit', function(e) {
     }
 });
 </script>
-
+<script src="../js/clean-url.js?v=<?= time(); ?>"></script>
 </body>
 </html>

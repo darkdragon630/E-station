@@ -11,80 +11,163 @@ if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'mitra') {
 
 $id_mitra = $_SESSION['user_id'];
 
+// DEBUG: Tampilkan ID Mitra
+error_log("DEBUG - ID Mitra dari Session: " . $id_mitra);
+
 try {
-    // mengambil data mitra 
+    // 1. Ambil data mitra
     $stmt = $koneksi->prepare("SELECT nama_mitra, status FROM mitra WHERE id_mitra = ?");
     $stmt->execute([$id_mitra]);
     $dataMitra = $stmt->fetch(PDO::FETCH_ASSOC);
+    
+    if (!$dataMitra) {
+        throw new Exception("Data mitra tidak ditemukan untuk ID: " . $id_mitra);
+    }
 
-    // hitung jumlah stasiun pengisian yang aktif
-    $stmt = $koneksi->prepare("SELECT COUNT(*) FROM stasiun_pengisian WHERE id_mitra = ? AND status = 'disetujui' AND status_operasional = 'aktif'");
+    // 2. Hitung SEMUA stasiun (tanpa filter status)
+    $stmt = $koneksi->prepare("
+        SELECT COUNT(*) 
+        FROM stasiun_pengisian 
+        WHERE id_mitra = ?
+    ");
+    $stmt->execute([$id_mitra]);
+    $totalStasiunSemua = $stmt->fetchColumn();
+
+    // 3. Hitung stasiun yang disetujui (untuk card "Stasiun Aktif")
+    $stmt = $koneksi->prepare("
+        SELECT COUNT(*) 
+        FROM stasiun_pengisian 
+        WHERE id_mitra = ? AND status = 'disetujui'
+    ");
     $stmt->execute([$id_mitra]);
     $jumlahStasiun = $stmt->fetchColumn();
 
-    // Hitung transaksi bulan ini
+    // 4. Hitung transaksi bulan ini (HANYA dari stasiun disetujui)
     $stmt = $koneksi->prepare("
         SELECT COUNT(*) FROM transaksi t
         JOIN stasiun_pengisian sp ON t.id_stasiun = sp.id_stasiun
-        WHERE sp.id_mitra = ? AND MONTH(t.tanggal_transaksi) = MONTH(CURRENT_DATE())
+        WHERE sp.id_mitra = ? 
+        AND sp.status = 'disetujui'
+        AND MONTH(t.tanggal_transaksi) = MONTH(CURRENT_DATE())
         AND YEAR(t.tanggal_transaksi) = YEAR(CURRENT_DATE())
     ");
     $stmt->execute([$id_mitra]);
     $jumlahTransaksi = $stmt->fetchColumn();
 
-    // Hitung total pendapatan bulan ini
+    // 5. Hitung total pendapatan bulan ini
     $stmt = $koneksi->prepare("
         SELECT COALESCE(SUM(t.total_harga), 0) FROM transaksi t
         JOIN stasiun_pengisian sp ON t.id_stasiun = sp.id_stasiun
-        WHERE sp.id_mitra = ? AND MONTH(t.tanggal_transaksi) = MONTH(CURRENT_DATE())
+        WHERE sp.id_mitra = ? 
+        AND sp.status = 'disetujui'
+        AND MONTH(t.tanggal_transaksi) = MONTH(CURRENT_DATE())
         AND YEAR(t.tanggal_transaksi) = YEAR(CURRENT_DATE())
     ");
     $stmt->execute([$id_mitra]);
     $totalPendapatan = $stmt->fetchColumn();
 
-    // Hitung total stok baterai dari semua stasiun milik mitra
+    // 6. Total stok baterai dari SEMUA stasiun
     $stmt = $koneksi->prepare("
         SELECT COALESCE(SUM(sb.jumlah), 0) as total_stok
-        FROM stok_baterai sb
-        JOIN stasiun_pengisian sp ON sb.id_stasiun = sp.id_stasiun
+        FROM stasiun_pengisian sp
+        LEFT JOIN stok_baterai sb ON sb.id_stasiun = sp.id_stasiun
         WHERE sp.id_mitra = ?
     ");
     $stmt->execute([$id_mitra]);
     $totalStokBaterai = $stmt->fetchColumn();
 
-    // Ambil daftar stasiun milik mitra
+    // 7. Ambil SEMUA stasiun milik mitra (tidak peduli status)
     $stmt = $koneksi->prepare("
-        SELECT id_stasiun, nama_stasiun, alamat, kapasitas, status, status_operasional, created_at, alasan_penolakan
-        FROM stasiun_pengisian 
-        WHERE id_mitra = ? 
-        ORDER BY created_at DESC
+        SELECT 
+            sp.id_stasiun, 
+            sp.nama_stasiun, 
+            sp.alamat, 
+            sp.kapasitas, 
+            sp.status, 
+            sp.status_operasional, 
+            sp.created_at, 
+            sp.alasan_penolakan,
+            COALESCE(SUM(sb.jumlah), 0) as total_stok_stasiun
+        FROM stasiun_pengisian sp
+        LEFT JOIN stok_baterai sb ON sp.id_stasiun = sb.id_stasiun
+        WHERE sp.id_mitra = ? 
+        GROUP BY sp.id_stasiun, sp.nama_stasiun, sp.alamat, sp.kapasitas, 
+                 sp.status, sp.status_operasional, sp.created_at, sp.alasan_penolakan
+        ORDER BY sp.created_at DESC
     ");
     $stmt->execute([$id_mitra]);
     $daftarStasiun = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
-    // Ambil notifikasi terbaru
-    $stmt = $koneksi->prepare("
-        SELECT judul, pesan, dikirim_pada, dibaca 
-        FROM notifikasi 
-        WHERE id_penerima = ? AND tipe_penerima = 'mitra'
-        ORDER BY dikirim_pada DESC LIMIT 5
-    ");
-    $stmt->execute([$id_mitra]);
-    $notifikasi = $stmt->fetchAll(PDO::FETCH_ASSOC);
+    // 8. Ambil notifikasi (gunakan kolom 'dibaca' yang benar)
+    try {
+        $stmt = $koneksi->prepare("
+            SELECT judul, pesan, dikirim_pada, dibaca
+            FROM notifikasi 
+            WHERE id_penerima = ? AND tipe_penerima = 'mitra'
+            ORDER BY dikirim_pada DESC LIMIT 5
+        ");
+        $stmt->execute([$id_mitra]);
+        $notifikasi = $stmt->fetchAll(PDO::FETCH_ASSOC);
+        
+        // Hitung notifikasi belum dibaca
+        $stmt = $koneksi->prepare("
+            SELECT COUNT(*) FROM notifikasi 
+            WHERE id_penerima = ? AND tipe_penerima = 'mitra' AND dibaca = 0
+        ");
+        $stmt->execute([$id_mitra]);
+        $notifBelumDibaca = $stmt->fetchColumn();
+    } catch (PDOException $e) {
+        error_log("Error notifikasi: " . $e->getMessage());
+        $notifikasi = [];
+        $notifBelumDibaca = 0;
+    }
 
-    // Hitung notifikasi belum dibaca
-    $stmt = $koneksi->prepare("
-        SELECT COUNT(*) FROM notifikasi 
-        WHERE id_penerima = ? AND tipe_penerima = 'mitra' AND dibaca = 0
-    ");
-    $stmt->execute([$id_mitra]);
-    $notifBelumDibaca = $stmt->fetchColumn();
+    // DEBUG OUTPUT - NONAKTIFKAN SETELAH SELESAI TESTING
+    /*
+    echo "<div style='background: #fff; padding: 20px; margin: 20px; border: 2px solid #27ae60; position: relative; z-index: 9999;'>";
+    echo "<h3 style='color: #27ae60;'>✅ DEBUG MODE - DATA BERHASIL DIMUAT</h3>";
+    echo "<pre style='background: #ecf0f1; padding: 15px; border-radius: 5px; color: #000;'>";
+    echo "<strong>Session Info:</strong>\n";
+    echo "ID Mitra: " . $id_mitra . "\n";
+    echo "Nama: " . ($_SESSION['nama'] ?? 'N/A') . "\n";
+    echo "Role: " . ($_SESSION['role'] ?? 'N/A') . "\n\n";
+    
+    echo "<strong>Data Mitra:</strong>\n";
+    print_r($dataMitra);
+    echo "\n";
+    
+    echo "<strong>Statistik:</strong>\n";
+    echo "Total Stasiun (Semua): " . $totalStasiunSemua . "\n";
+    echo "Stasiun Aktif (Disetujui): " . $jumlahStasiun . "\n";
+    echo "Total Stok Baterai: " . $totalStokBaterai . "\n";
+    echo "Transaksi Bulan Ini: " . $jumlahTransaksi . "\n";
+    echo "Pendapatan Bulan Ini: Rp " . number_format($totalPendapatan, 0, ',', '.') . "\n";
+    echo "Notifikasi Belum Dibaca: " . $notifBelumDibaca . "\n\n";
+    
+    echo "<strong>Jumlah Data Stasiun:</strong> " . count($daftarStasiun) . "\n\n";
+    echo "<strong>Detail Stasiun:</strong>\n";
+    print_r($daftarStasiun);
+    echo "\n\n<strong>Notifikasi:</strong>\n";
+    print_r($notifikasi);
+    echo "</pre>";
+    echo "<button onclick='this.parentElement.remove()' style='background: #e74c3c; color: #fff; border: none; padding: 10px 20px; border-radius: 5px; cursor: pointer; margin-top: 10px;'>Tutup Debug</button>";
+    echo "</div>";
+    */
 
 } catch (PDOException $e) {
     error_log("Dashboard Error: " . $e->getMessage());
+    echo "<div class='alert alert-danger' style='margin: 20px; background: #fee; color: #c00; padding: 15px; border: 1px solid #c00; border-radius: 5px;'>";
+    echo "<strong>❌ Database Error:</strong><br>";
+    echo htmlspecialchars($e->getMessage());
+    echo "<br><br><strong>File:</strong> " . $e->getFile();
+    echo "<br><strong>Line:</strong> " . $e->getLine();
+    echo "</div>";
+    
+    // Set default values
     if (!isset($dataMitra)) {
         $dataMitra = ['nama_mitra' => $_SESSION['nama'] ?? 'Mitra', 'status' => 'pending'];
     }
+    $totalStasiunSemua = 0;
     $jumlahStasiun = 0;
     $jumlahTransaksi = 0;
     $totalPendapatan = 0;
@@ -92,6 +175,12 @@ try {
     $daftarStasiun = [];
     $notifikasi = [];
     $notifBelumDibaca = 0;
+} catch (Exception $e) {
+    error_log("General Error: " . $e->getMessage());
+    echo "<div class='alert alert-danger' style='margin: 20px; background: #fee; color: #c00; padding: 15px; border: 1px solid #c00; border-radius: 5px;'>";
+    echo "<strong>❌ Error:</strong><br>";
+    echo htmlspecialchars($e->getMessage());
+    echo "</div>";
 }
 ?>
 <!doctype html>
@@ -131,6 +220,9 @@ try {
             <button id="mobileThemeToggle">🌙</button>
             <button onclick="window.location.href='notifications.php'">
                 <i class="fas fa-bell"></i>
+                <?php if ($notifBelumDibaca > 0): ?>
+                <span class="badge"><?= $notifBelumDibaca; ?></span>
+                <?php endif; ?>
             </button>
         </div>
     </div>
@@ -152,17 +244,17 @@ try {
     <div class="stats-grid d-md-none">
         <div class="stat-card" style="background: linear-gradient(135deg, rgba(124, 58, 237, 0.2), rgba(168, 85, 247, 0.15)); border: 1px solid rgba(168, 85, 247, 0.3);">
             <i class="fas fa-charging-station" style="color: #a855f7;"></i>
-            <h4><?= $jumlahStasiun ?? 0; ?></h4>
+            <h4><?= intval($jumlahStasiun); ?></h4>
             <small>Stasiun Aktif</small>
         </div>
         <div class="stat-card" style="background: linear-gradient(135deg, rgba(239, 68, 68, 0.2), rgba(220, 38, 38, 0.15)); border: 1px solid rgba(239, 68, 68, 0.3);">
             <i class="fas fa-battery-three-quarters" style="color: #ef4444;"></i>
-            <h4><?= $totalStokBaterai ?? 0; ?></h4>
+            <h4><?= intval($totalStokBaterai); ?></h4>
             <small>Stok Baterai</small>
         </div>
         <div class="stat-card" style="background: linear-gradient(135deg, rgba(6, 182, 212, 0.2), rgba(8, 145, 178, 0.15)); border: 1px solid rgba(6, 182, 212, 0.3);">
             <i class="fas fa-receipt" style="color: #06b6d4;"></i>
-            <h4><?= $jumlahTransaksi ?? 0; ?></h4>
+            <h4><?= intval($jumlahTransaksi); ?></h4>
             <small>Transaksi</small>
         </div>
         <div class="stat-card" style="background: linear-gradient(135deg, rgba(16, 185, 129, 0.2), rgba(5, 150, 105, 0.15)); border: 1px solid rgba(16, 185, 129, 0.3);">
@@ -178,7 +270,7 @@ try {
             <div class="card text-center" style="background: linear-gradient(135deg, #7b61ff, #ff6b9a); color: white;">
                 <div class="card-body">
                     <i class="fas fa-charging-station fa-2x mb-2"></i>
-                    <h4 class="mb-0"><?= $jumlahStasiun ?? 0; ?></h4>
+                    <h4 class="mb-0"><?= intval($jumlahStasiun); ?></h4>
                     <small>Stasiun Aktif</small>
                 </div>
             </div>
@@ -187,7 +279,7 @@ try {
             <div class="card text-center" style="background: linear-gradient(135deg, #ff7aa2, #ffb166); color: white;">
                 <div class="card-body">
                     <i class="fas fa-battery-three-quarters fa-2x mb-2"></i>
-                    <h4 class="mb-0"><?= $totalStokBaterai ?? 0; ?></h4>
+                    <h4 class="mb-0"><?= intval($totalStokBaterai); ?></h4>
                     <small>Total Stok Baterai</small>
                 </div>
             </div>
@@ -196,7 +288,7 @@ try {
             <div class="card text-center" style="background: linear-gradient(135deg, #44d8ff, #5ee6c8); color: white;">
                 <div class="card-body">
                     <i class="fas fa-receipt fa-2x mb-2"></i>
-                    <h4 class="mb-0"><?= $jumlahTransaksi ?? 0; ?></h4>
+                    <h4 class="mb-0"><?= intval($jumlahTransaksi); ?></h4>
                     <small>Transaksi Bulan Ini</small>
                 </div>
             </div>
@@ -311,6 +403,7 @@ try {
                 <thead>
                     <tr>
                         <th>Nama Stasiun</th>
+                        <th>Alamat</th>
                         <th>Tanggal</th>
                         <th class="text-center">Status</th>
                         <th class="text-center">Aksi</th>
@@ -319,9 +412,10 @@ try {
                 <tbody>
                     <?php if (empty($daftarStasiun)): ?>
                     <tr>
-                        <td colspan="4" class="text-center text-muted py-4">
+                        <td colspan="5" class="text-center text-muted py-4">
                             <i class="fas fa-inbox fa-2x mb-2" style="opacity: 0.3;"></i>
                             <p class="mb-0">Belum ada pengajuan stasiun</p>
+                            <small>Klik tombol "Tambah Stasiun" untuk memulai</small>
                         </td>
                     </tr>
                     <?php else: ?>
@@ -329,17 +423,25 @@ try {
                     <tr>
                         <td>
                             <strong><?= htmlspecialchars($stasiun['nama_stasiun']); ?></strong>
-                            <br><small class="text-muted"><?= htmlspecialchars(substr($stasiun['alamat'], 0, 30)); ?>...</small>
+                            <?php if (isset($stasiun['total_stok_stasiun']) && $stasiun['total_stok_stasiun'] > 0): ?>
+                            <br><small class="text-success"><i class="fas fa-battery-full"></i> Stok: <?= $stasiun['total_stok_stasiun']; ?></small>
+                            <?php endif; ?>
                         </td>
+                        <td><small class="text-muted"><?= htmlspecialchars(substr($stasiun['alamat'], 0, 50)); ?>...</small></td>
                         <td><?= date('d/m/Y', strtotime($stasiun['created_at'])); ?></td>
                         <td class="text-center">
                             <span class="status-badge status-<?= $stasiun['status'] == 'disetujui' ? 'approved' : ($stasiun['status'] == 'ditolak' ? 'rejected' : 'pending'); ?>">
                                 <?= ucfirst($stasiun['status']); ?>
                             </span>
+                            <?php if ($stasiun['status'] == 'disetujui' && !empty($stasiun['status_operasional'])): ?>
+                            <br><small class="badge bg-<?= $stasiun['status_operasional'] == 'aktif' ? 'success' : 'warning'; ?> mt-1">
+                                <?= ucfirst($stasiun['status_operasional']); ?>
+                            </small>
+                            <?php endif; ?>
                         </td>
                         <td class="text-center">
                             <a href="detail_stasiun.php?id=<?= $stasiun['id_stasiun']; ?>" class="btn btn-sm btn-outline-info">
-                                <i class="fas fa-eye"></i>
+                                <i class="fas fa-eye"></i> Detail
                             </a>
                         </td>
                     </tr>
@@ -351,7 +453,7 @@ try {
     </div>
 
     <!-- TIPS SECTION -->
-    <div class="card" style="background: linear-gradient(135deg, rgba(123, 97, 255, 0.1), rgba(255, 107, 154, 0.1)); border: 1px solid rgba(123, 97, 255, 0.3);">
+    <div class="card mt-4" style="background: linear-gradient(135deg, rgba(123, 97, 255, 0.1), rgba(255, 107, 154, 0.1)); border: 1px solid rgba(123, 97, 255, 0.3);">
         <div class="card-body">
             <h5 class="card-title"><i class="fas fa-lightbulb me-2" style="color: #fbbf24;"></i>Tips Pengelolaan Stasiun</h5>
             <div class="row">

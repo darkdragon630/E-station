@@ -522,6 +522,6 @@ function showEditModal(idStok, tipeBaterai, jumlah) {
     new bootstrap.Modal(document.getElementById('editModal')).show();
 }
 </script>
-
+<script src="../js/clean-url.js?v=<?= time(); ?>"></script>
 </body>
 </html>

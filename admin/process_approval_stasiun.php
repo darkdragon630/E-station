@@ -22,13 +22,27 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     }
     
     try {
-        // Ambil data stasiun dan mitra
-        $stmt = $koneksi->prepare("
-            SELECT s.*, u.nama as nama_mitra, u.email, u.no_telepon
-            FROM stasiun_pengisian s
-            JOIN users u ON s.id_mitra = u.id
-            WHERE s.id_stasiun = :id_stasiun
-        ");
+        // Check if mitra table exists
+        $checkTable = $koneksi->query("SHOW TABLES LIKE 'mitra'")->rowCount();
+        
+        if ($checkTable > 0) {
+            // Ambil data stasiun dan mitra dari tabel mitra
+            $stmt = $koneksi->prepare("
+                SELECT s.*, m.nama_mitra, m.email, m.no_telepon
+                FROM stasiun_pengisian s
+                LEFT JOIN mitra m ON s.id_mitra = m.id_mitra
+                WHERE s.id_stasiun = :id_stasiun
+            ");
+        } else {
+            // Ambil data stasiun dan mitra dari tabel users
+            $stmt = $koneksi->prepare("
+                SELECT s.*, u.nama as nama_mitra, u.email, u.no_telepon
+                FROM stasiun_pengisian s
+                LEFT JOIN users u ON s.id_mitra = u.id
+                WHERE s.id_stasiun = :id_stasiun
+            ");
+        }
+        
         $stmt->execute([':id_stasiun' => $id_stasiun]);
         $stasiun = $stmt->fetch(PDO::FETCH_ASSOC);
         
@@ -42,7 +56,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         }
         
         if ($action === 'approve') {
-            // Approve - ubah status jadi aktif
+            // Approve - ubah status jadi disetujui dan aktif
             $updateStmt = $koneksi->prepare("
                 UPDATE stasiun_pengisian 
                 SET status_operasional = 'aktif',
@@ -57,16 +71,21 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 ':admin_id' => $_SESSION['user_id']
             ]);
             
-            // Log aktivitas
-            $logStmt = $koneksi->prepare("
-                INSERT INTO log_aktivitas (id_user, aktivitas, keterangan)
-                VALUES (:id_user, :aktivitas, :keterangan)
-            ");
-            $logStmt->execute([
-                ':id_user' => $_SESSION['user_id'],
-                ':aktivitas' => 'approve_stasiun',
-                ':keterangan' => "Menyetujui stasiun: {$stasiun['nama_stasiun']} (ID: {$id_stasiun})"
-            ]);
+            // Log aktivitas jika tabel ada
+            try {
+                $logStmt = $koneksi->prepare("
+                    INSERT INTO log_aktivitas (id_user, aktivitas, keterangan, created_at)
+                    VALUES (:id_user, :aktivitas, :keterangan, CURRENT_TIMESTAMP)
+                ");
+                $logStmt->execute([
+                    ':id_user' => $_SESSION['user_id'],
+                    ':aktivitas' => 'approve_stasiun',
+                    ':keterangan' => "Menyetujui stasiun: {$stasiun['nama_stasiun']} (ID: {$id_stasiun})"
+                ]);
+            } catch (PDOException $e) {
+                // Log table might not exist, continue anyway
+                error_log("Log aktivitas error: " . $e->getMessage());
+            }
             
             $_SESSION['alert'] = [
                 'type' => 'success',
@@ -99,16 +118,21 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 ':reason' => $reason
             ]);
             
-            // Log aktivitas
-            $logStmt = $koneksi->prepare("
-                INSERT INTO log_aktivitas (id_user, aktivitas, keterangan)
-                VALUES (:id_user, :aktivitas, :keterangan)
-            ");
-            $logStmt->execute([
-                ':id_user' => $_SESSION['user_id'],
-                ':aktivitas' => 'reject_stasiun',
-                ':keterangan' => "Menolak stasiun: {$stasiun['nama_stasiun']} (ID: {$id_stasiun}). Alasan: {$reason}"
-            ]);
+            // Log aktivitas jika tabel ada
+            try {
+                $logStmt = $koneksi->prepare("
+                    INSERT INTO log_aktivitas (id_user, aktivitas, keterangan, created_at)
+                    VALUES (:id_user, :aktivitas, :keterangan, CURRENT_TIMESTAMP)
+                ");
+                $logStmt->execute([
+                    ':id_user' => $_SESSION['user_id'],
+                    ':aktivitas' => 'reject_stasiun',
+                    ':keterangan' => "Menolak stasiun: {$stasiun['nama_stasiun']} (ID: {$id_stasiun}). Alasan: {$reason}"
+                ]);
+            } catch (PDOException $e) {
+                // Log table might not exist, continue anyway
+                error_log("Log aktivitas error: " . $e->getMessage());
+            }
             
             $_SESSION['alert'] = [
                 'type' => 'warning',
@@ -130,6 +154,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             'type' => 'danger',
             'message' => 'Gagal memproses approval: ' . $e->getMessage()
         ];
+        error_log("Approval error: " . $e->getMessage());
         header('Location: approval_stasiun.php');
         exit;
     }
