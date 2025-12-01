@@ -7,7 +7,7 @@
     <style>
         body {
             font-family: Arial, Helvetica, sans-serif;
-            background-color: #f4f4f4;
+            background-image: url("../images/under_construction.png");
             color: #333;
             text-align: center;
             padding: 50px;

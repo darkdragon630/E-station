@@ -25,7 +25,7 @@
                 <a class="nav-link <?= basename($_SERVER['PHP_SELF']) == 'profile.php' ? 'active' : '' ?>" href="profile.php">
                     <i class="fas fa-user me-1"></i> Profil
                 </a>
-                <a class="nav-link" href="../auth/logout.php">
+                <a class="nav-link" href="../auth/logout.php" onclick="return confirm('Apakah anda yakin ingin keluar ?')">
                     <i class="fas fa-sign-out-alt me-1"></i> Logout
                 </a>
             </div>

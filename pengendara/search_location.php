@@ -387,7 +387,7 @@ h5, h6 { font-weight: 600; color: #f1f5f9; }
                                     <span class="distance-badge d-block mb-2">
                                         <i class="fas fa-route"></i> Menghitung...
                                     </span>
-                                    <a href="station_detail.php?id=<?php echo $s['id_stasiun']; ?>" 
+                                    <a href="station_list.php?id=<?php echo $s['id_stasiun']; ?>" 
                                        class="btn btn-sm btn-primary w-100">
                                         Detail <i class="fas fa-arrow-right"></i>
                                     </a>

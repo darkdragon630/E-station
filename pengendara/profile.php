@@ -620,7 +620,7 @@ try {
                 <a class="nav-link" href="search_location.php"><i class="fas fa-map-marked-alt me-1"></i> Cari Lokasi</a>
                 <a class="nav-link" href="transaction_history.php"><i class="fas fa-history me-1"></i> Riwayat</a>
                 <a class="nav-link" href="profile.php"><i class="fas fa-user me-1"></i> Profil</a>
-                <a class="nav-link" href="../auth/logout.php"><i class="fas fa-sign-out-alt me-1"></i> Logout</a>
+                <a class="nav-link" href="../auth/logout.php" onclick="return confirm('Apakah anda yakin ingin keluar ?')"><i class="fas fa-sign-out-alt me-1"></i> Logout</a>
             </div>
         </div>
     </div>
@@ -760,7 +760,7 @@ try {
             </div>
         </a>
 
-        <a href="../auth/logout.php" class="menu-item logout-btn">
+        <a href="../auth/logout.php" onclick="return confirm('Apakah anda yakin ingin keluar ?')" class="menu-item logout-btn">
             <div class="menu-item-left">
                 <div class="menu-icon">
                     <i class="fas fa-sign-out-alt"></i>

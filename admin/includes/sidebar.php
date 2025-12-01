@@ -98,7 +98,7 @@ $current_page = basename($_SERVER['PHP_SELF']);
             </a>
         </li>
         <li>
-            <a href="../auth/logout.php" class="logout">
+            <a href="../auth/logout.php" onclick="return confirm('Apakah anda yakin ingin keluar ?')" class="logout">
                 <i class="fas fa-sign-out-alt"></i> Logout
             </a>
         </li>
