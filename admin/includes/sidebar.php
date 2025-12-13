@@ -83,11 +83,6 @@ $current_page = basename($_SERVER['PHP_SELF']);
             </a>
         </li>
         <li>
-            <a href="promo.php" class="<?= $current_page == 'promo.php' ? 'active' : ''; ?>">
-                <i class="fas fa-tags"></i> Promo & Insentif
-            </a>
-        </li>
-        <li>
             <a href="maintenance.php" class="<?= $current_page == 'maintenance.php' ? 'active' : ''; ?>">
                 <i class="fas fa-tools"></i> Maintenance
             </a>

@@ -437,7 +437,7 @@ body.light h2 {
 
         <?php if ($detail): ?>
             <!-- DETAIL VIEW -->
-            <a href="station_detail.php" class="btn btn-secondary mb-4 d-none d-md-inline-block">
+            <a href="station_list.php" class="btn btn-secondary mb-4 d-none d-md-inline-block">
                 <i class="fas fa-arrow-left me-2"></i>Kembali ke Daftar
             </a>
             

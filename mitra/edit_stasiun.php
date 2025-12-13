@@ -43,6 +43,28 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         if (empty($nama_stasiun) || empty($alamat) || $kapasitas <= 0 || $tarif_per_kwh <= 0) {
             set_flash_message('error', 'Semua field wajib diisi dengan benar!');
         } else {
+            // Ambil status stasiun saat ini
+            $checkStmt = $koneksi->prepare("SELECT status FROM stasiun_pengisian WHERE id_stasiun = ? AND id_mitra = ?");
+            $checkStmt->execute([$id_stasiun, $id_mitra]);
+            $currentStatus = $checkStmt->fetchColumn();
+            
+            // Tentukan status baru berdasarkan kondisi
+            $newStatus = $currentStatus;
+            $newStatusOperasional = $status_operasional;
+            
+            // Jika stasiun ditolak dan sedang diperbaiki, ubah status ke pending
+            if ($currentStatus === 'ditolak') {
+                $newStatus = 'pending';
+                $newStatusOperasional = 'nonaktif'; // Set nonaktif saat menunggu approval
+                set_flash_message('info', 'Stasiun akan diajukan ulang untuk verifikasi admin.');
+            }
+            // Jika stasiun belum disetujui (pending), tetap pending
+            elseif ($currentStatus === 'pending') {
+                $newStatus = 'pending';
+                $newStatusOperasional = 'nonaktif';
+            }
+            // Jika stasiun sudah disetujui, biarkan statusnya dan gunakan status_operasional yang dipilih
+            
             // Update data stasiun
             $stmt = $koneksi->prepare("
                 UPDATE stasiun_pengisian 
@@ -56,6 +78,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     latitude = ?,
                     longitude = ?,
                     status_operasional = ?,
+                    status = ?,
+                    alasan_penolakan = NULL,
                     updated_at = CURRENT_TIMESTAMP
                 WHERE id_stasiun = ? AND id_mitra = ?
             ");
@@ -70,13 +94,18 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 $fasilitas,
                 $latitude,
                 $longitude,
-                $status_operasional,
+                $newStatusOperasional,
+                $newStatus,
                 $id_stasiun,
                 $id_mitra
             ]);
 
             if ($success && $stmt->rowCount() > 0) {
-                set_flash_message('success', 'Data stasiun berhasil diperbarui!');
+                if ($currentStatus === 'ditolak') {
+                    set_flash_message('success', 'Data stasiun berhasil diperbaiki dan diajukan ulang untuk verifikasi!');
+                } else {
+                    set_flash_message('success', 'Data stasiun berhasil diperbarui!');
+                }
                 header("Location: detail_stasiun.php?id=" . $id_stasiun);
                 exit;
             } else {
@@ -201,14 +230,29 @@ try {
         <h6 class="alert-heading"><i class="fas fa-exclamation-triangle me-2"></i>Catatan Penolakan</h6>
         <p class="mb-0"><?= htmlspecialchars($stasiun['alasan_penolakan']); ?></p>
         <hr>
-        <small>Harap perbaiki sesuai catatan di atas sebelum mengajukan ulang.</small>
+        <small>Harap perbaiki sesuai catatan di atas. Setelah disimpan, stasiun akan diajukan ulang untuk verifikasi admin.</small>
+    </div>
+    <?php endif; ?>
+
+    <?php if ($stasiun['status'] === 'pending'): ?>
+    <div class="alert alert-info">
+        <h6 class="alert-heading"><i class="fas fa-clock me-2"></i>Status: Menunggu Verifikasi</h6>
+        <p class="mb-0">Stasiun Anda sedang dalam proses verifikasi admin. Anda masih dapat melakukan perubahan sebelum disetujui.</p>
     </div>
     <?php endif; ?>
 
     <div class="station-form">
         <h4><i class="fas fa-charging-station me-2"></i>Informasi Stasiun</h4>
         <p class="form-description">
-            <?= $isApproved ? 'Edit informasi operasional stasiun Anda' : 'Lengkapi dan perbaiki data stasiun Anda'; ?>
+            <?php 
+            if ($stasiun['status'] === 'ditolak') {
+                echo 'Perbaiki data stasiun sesuai catatan penolakan di atas';
+            } elseif ($stasiun['status'] === 'pending') {
+                echo 'Lengkapi atau perbaiki data stasiun sebelum diverifikasi';
+            } else {
+                echo 'Edit informasi operasional stasiun Anda';
+            }
+            ?>
         </p>
 
         <form method="POST" action="">
@@ -299,12 +343,18 @@ try {
                     <label class="form-label">
                         <i class="fas fa-toggle-on me-2"></i>Status Operasional *
                     </label>
-                    <select name="status_operasional" class="form-control" required>
-                        <option value="aktif" <?= $stasiun['status_operasional'] === 'aktif' ? 'selected' : ''; ?>>Aktif</option>
-                        <option value="nonaktif" <?= $stasiun['status_operasional'] === 'nonaktif' ? 'selected' : ''; ?>>Non-Aktif</option>
-                        <option value="maintenance" <?= $stasiun['status_operasional'] === 'maintenance' ? 'selected' : ''; ?>>Maintenance</option>
-                    </select>
-                    <small class="text-muted">Status dapat diubah sesuai kondisi stasiun</small>
+                    <?php if (!$isApproved): ?>
+                        <input type="text" class="form-control" value="Menunggu Verifikasi" readonly>
+                        <input type="hidden" name="status_operasional" value="nonaktif">
+                        <small class="text-muted">Status akan diatur setelah disetujui admin</small>
+                    <?php else: ?>
+                        <select name="status_operasional" class="form-control" required>
+                            <option value="aktif" <?= $stasiun['status_operasional'] === 'aktif' ? 'selected' : ''; ?>>Aktif</option>
+                            <option value="nonaktif" <?= $stasiun['status_operasional'] === 'nonaktif' ? 'selected' : ''; ?>>Non-Aktif</option>
+                            <option value="maintenance" <?= $stasiun['status_operasional'] === 'maintenance' ? 'selected' : ''; ?>>Maintenance</option>
+                        </select>
+                        <small class="text-muted">Status dapat diubah sesuai kondisi stasiun</small>
+                    <?php endif; ?>
                 </div>
 
                 <div class="col-md-6 mb-3">
@@ -388,7 +438,8 @@ try {
                     <i class="fas fa-times me-2"></i>Batal
                 </a>
                 <button type="submit" class="btn btn-primary">
-                    <i class="fas fa-save me-2"></i>Simpan Perubahan
+                    <i class="fas fa-save me-2"></i>
+                    <?= $stasiun['status'] === 'ditolak' ? 'Simpan & Ajukan Ulang' : 'Simpan Perubahan'; ?>
                 </button>
             </div>
         </form>
@@ -401,6 +452,10 @@ try {
                 <?php if ($isApproved): ?>
                 <li>Data stasiun yang sudah disetujui hanya dapat diubah pada bagian <strong>Kapasitas Kendaraan</strong>, <strong>Jumlah Slot</strong>, <strong>Tarif per kWh</strong>, <strong>Status Operasional</strong>, <strong>Jam Operasional</strong>, dan <strong>Fasilitas</strong></li>
                 <li>Untuk mengubah data lain (nama, alamat, koordinat), silakan hubungi admin</li>
+                <?php elseif ($stasiun['status'] === 'ditolak'): ?>
+                <li>Perbaiki data sesuai catatan penolakan dari admin</li>
+                <li>Setelah menyimpan, stasiun akan <strong>otomatis diajukan ulang</strong> untuk verifikasi</li>
+                <li>Status stasiun akan berubah menjadi "Menunggu Verifikasi"</li>
                 <?php else: ?>
                 <li>Pastikan semua data yang diisi sudah benar sebelum menyimpan</li>
                 <li>Data yang sudah disetujui tidak dapat diubah kecuali bagian operasional tertentu</li>

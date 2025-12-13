@@ -20,7 +20,7 @@
         <i class="fas fa-file-invoice-dollar"></i>
         <span>Laporan</span>
     </a>
-    <a href="edit_profile.php" class="<?= basename($_SERVER['PHP_SELF']) == 'edit_profile.php' ? 'active' : '' ?>">
+    <a href="profile.php" class="<?= basename($_SERVER['PHP_SELF']) == 'edit_profile.php' ? 'active' : '' ?>">
         <i class="fas fa-user"></i>
         <span>Profil</span>
     </a>

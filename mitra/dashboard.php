@@ -122,38 +122,6 @@ try {
         $notifBelumDibaca = 0;
     }
 
-    // DEBUG OUTPUT - NONAKTIFKAN SETELAH SELESAI TESTING
-    /*
-    echo "<div style='background: #fff; padding: 20px; margin: 20px; border: 2px solid #27ae60; position: relative; z-index: 9999;'>";
-    echo "<h3 style='color: #27ae60;'>✅ DEBUG MODE - DATA BERHASIL DIMUAT</h3>";
-    echo "<pre style='background: #ecf0f1; padding: 15px; border-radius: 5px; color: #000;'>";
-    echo "<strong>Session Info:</strong>\n";
-    echo "ID Mitra: " . $id_mitra . "\n";
-    echo "Nama: " . ($_SESSION['nama'] ?? 'N/A') . "\n";
-    echo "Role: " . ($_SESSION['role'] ?? 'N/A') . "\n\n";
-    
-    echo "<strong>Data Mitra:</strong>\n";
-    print_r($dataMitra);
-    echo "\n";
-    
-    echo "<strong>Statistik:</strong>\n";
-    echo "Total Stasiun (Semua): " . $totalStasiunSemua . "\n";
-    echo "Stasiun Aktif (Disetujui): " . $jumlahStasiun . "\n";
-    echo "Total Stok Baterai: " . $totalStokBaterai . "\n";
-    echo "Transaksi Bulan Ini: " . $jumlahTransaksi . "\n";
-    echo "Pendapatan Bulan Ini: Rp " . number_format($totalPendapatan, 0, ',', '.') . "\n";
-    echo "Notifikasi Belum Dibaca: " . $notifBelumDibaca . "\n\n";
-    
-    echo "<strong>Jumlah Data Stasiun:</strong> " . count($daftarStasiun) . "\n\n";
-    echo "<strong>Detail Stasiun:</strong>\n";
-    print_r($daftarStasiun);
-    echo "\n\n<strong>Notifikasi:</strong>\n";
-    print_r($notifikasi);
-    echo "</pre>";
-    echo "<button onclick='this.parentElement.remove()' style='background: #e74c3c; color: #fff; border: none; padding: 10px 20px; border-radius: 5px; cursor: pointer; margin-top: 10px;'>Tutup Debug</button>";
-    echo "</div>";
-    */
-
 } catch (PDOException $e) {
     error_log("Dashboard Error: " . $e->getMessage());
     echo "<div class='alert alert-danger' style='margin: 20px; background: #fee; color: #c00; padding: 15px; border: 1px solid #c00; border-radius: 5px;'>";
@@ -306,6 +274,50 @@ try {
 
     <div class="row">
 
+        <!-- QUICK ACTION: TAMBAH KEUNTUNGAN -->
+        <div class="col-md-8 mb-4">
+            <div class="card" style="background: linear-gradient(135deg, rgba(16, 185, 129, 0.15), rgba(5, 150, 105, 0.1)); border: 2px solid rgba(16, 185, 129, 0.3);">
+                <div class="card-body">
+                    <div class="row align-items-center">
+                        <div class="col-md-8">
+                            <h5 class="card-title mb-2">
+                                <i class="fas fa-money-bill-wave me-2" style="color: #10b981;"></i>
+                                Catat Keuntungan Hari Ini
+                            </h5>
+                            <p class="mb-3" style="font-size: 0.9rem;">
+                                Input transaksi pengisian daya listrik dan catat keuntungan stasiun Anda secara manual
+                            </p>
+                            <div class="d-flex gap-2 flex-wrap">
+                                <a href="tambah_keuntungan_mitra.php" class="btn btn-success">
+                                    <i class="fas fa-plus-circle me-1"></i>Tambah Keuntungan
+                                </a>
+                                <a href="usage_history.php" class="btn btn-outline-success">
+                                    <i class="fas fa-history me-1"></i>Lihat Riwayat
+                                </a>
+                            </div>
+                        </div>
+                        <div class="col-md-4 text-center d-none d-md-block">
+                            <i class="fas fa-coins fa-5x" style="color: #10b981; opacity: 0.3;"></i>
+                        </div>
+                    </div>
+                    <div class="row mt-3 pt-3" style="border-top: 1px solid rgba(16, 185, 129, 0.2);">
+                        <div class="col-4 text-center">
+                            <div style="font-size: 1.5rem; font-weight: 700; color: #10b981;"><?= intval($jumlahTransaksi); ?></div>
+                            <small class="text-muted">Transaksi Bulan Ini</small>
+                        </div>
+                        <div class="col-4 text-center">
+                            <div style="font-size: 1.5rem; font-weight: 700; color: #10b981;">Rp <?= number_format($totalPendapatan / 1000, 0); ?>k</div>
+                            <small class="text-muted">Total Pendapatan</small>
+                        </div>
+                        <div class="col-4 text-center">
+                            <div style="font-size: 1.5rem; font-weight: 700; color: #10b981;"><?= intval($jumlahStasiun); ?></div>
+                            <small class="text-muted">Stasiun Aktif</small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
         <!-- KELOLA STASIUN -->
         <div class="col-md-4 mb-4">
             <div class="card">
@@ -337,7 +349,7 @@ try {
         </div>
 
         <!-- NOTIFIKASI -->
-        <div class="col-md-4 mb-4">
+        <div class="col-md-6 mb-4">
             <div class="card">
                 <h5 class="card-title"><i class="fas fa-bell me-2"></i>Notifikasi</h5>
                 <?php if (!empty($notifikasi)): ?>
@@ -369,9 +381,9 @@ try {
         </div>
 
         <!-- LAPORAN & RIWAYAT -->
-        <div class="col-md-4 mb-4">
+        <div class="col-md-6 mb-4">
             <div class="card">
-                <h5 class="card-title"><i class="fas fa-chart-line me-2"></i>Laporan & Riwayat</h5>
+                <h5 class="card-title"><i class="fas fa-chart-line me-2"></i>Menu Lainnya</h5>
                 <div class="py-3">
                     <div class="d-grid gap-2">
                         <a href="stok_baterai.php" class="btn btn-outline-primary btn-sm">

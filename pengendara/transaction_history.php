@@ -17,10 +17,10 @@ if (!isset($koneksi)) {
 $id_pengendara = $_SESSION['user_id'];
 
 try {
-    // Ambil riwayat transaksi
+    // Ambil riwayat transaksi dengan info baterai
     $stmt = $koneksi->prepare("
         SELECT t.id_transaksi, t.tanggal_transaksi, t.jumlah_kwh, t.total_harga, 
-               t.status_transaksi, s.nama_stasiun, s.alamat
+               t.status_transaksi, t.baterai_terpakai, s.nama_stasiun, s.alamat
         FROM transaksi t 
         JOIN stasiun_pengisian s ON t.id_stasiun = s.id_stasiun 
         WHERE t.id_pengendara = ? 
@@ -29,12 +29,14 @@ try {
     $stmt->execute([$id_pengendara]);
     $transaksi = $stmt->fetchAll(PDO::FETCH_ASSOC);
     
-    // Hitung total statistik
+    // Hitung total statistik termasuk baterai
     $stmtStats = $koneksi->prepare("
         SELECT 
             COUNT(*) as total_transaksi,
             SUM(jumlah_kwh) as total_kwh,
-            SUM(total_harga) as total_pengeluaran
+            SUM(total_harga) as total_pengeluaran,
+            SUM(CASE WHEN baterai_terpakai > 0 THEN CEIL(baterai_terpakai / 100) ELSE 0 END) as total_baterai_terpakai,
+            AVG(baterai_terpakai) as avg_baterai_terpakai
         FROM transaksi 
         WHERE id_pengendara = ?
     ");
@@ -43,7 +45,13 @@ try {
 } catch (PDOException $e) {
     error_log("Database error: " . $e->getMessage());
     $transaksi = [];
-    $stats = ['total_transaksi' => 0, 'total_kwh' => 0, 'total_pengeluaran' => 0];
+    $stats = [
+        'total_transaksi' => 0, 
+        'total_kwh' => 0, 
+        'total_pengeluaran' => 0,
+        'total_baterai_terpakai' => 0,
+        'avg_baterai_terpakai' => 0
+    ];
 }
 ?>
 
@@ -157,7 +165,7 @@ body::before {
 /* === STATS CARDS === */
 .stats-container {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
     gap: 20px;
     margin-bottom: 40px;
     animation: fadeInUp 1s ease;
@@ -204,7 +212,7 @@ body::before {
 }
 
 .stat-card h3 {
-    font-size: 2rem;
+    font-size: 1.8rem;
     font-weight: 700;
     margin: 10px 0;
     color: #60a5fa;
@@ -319,6 +327,23 @@ body::before {
 
 .transaction-table tbody td:last-child {
     border-radius: 0 12px 12px 0;
+}
+
+/* === BATTERY INDICATOR === */
+.battery-indicator {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 6px 12px;
+    background: rgba(56, 239, 125, 0.15);
+    border: 1px solid rgba(56, 239, 125, 0.3);
+    border-radius: 20px;
+    font-weight: 600;
+}
+
+.battery-icon {
+    color: #38ef7d;
+    font-size: 1.2rem;
 }
 
 /* === STATUS BADGES === */
@@ -442,6 +467,11 @@ body.light .transaction-table tbody td {
     color: #475569;
 }
 
+body.light .battery-indicator {
+    background: rgba(56, 239, 125, 0.1);
+    border-color: rgba(56, 239, 125, 0.2);
+}
+
 body.light .empty-state i {
     color: #cbd5e1;
 }
@@ -466,7 +496,7 @@ body.light .empty-state h3 {
     }
     
     .transaction-table {
-        min-width: 800px;
+        min-width: 900px;
     }
     
     .filter-section {
@@ -552,6 +582,11 @@ body.light .empty-state h3 {
                 <p>Total Energi Terpakai</p>
             </div>
             <div class="stat-card">
+                <div class="stat-icon">🔋</div>
+                <h3><?php echo number_format($stats['total_baterai_terpakai'] ?? 0); ?> unit</h3>
+                <p>Total Baterai Terpakai</p>
+            </div>
+            <div class="stat-card">
                 <div class="stat-icon">💰</div>
                 <h3>Rp <?php echo number_format($stats['total_pengeluaran'] ?? 0, 0, ',', '.'); ?></h3>
                 <p>Total Pengeluaran</p>
@@ -587,6 +622,7 @@ body.light .empty-state h3 {
                                 <th><i class="fas fa-calendar me-2"></i>Tanggal</th>
                                 <th><i class="fas fa-charging-station me-2"></i>Stasiun</th>
                                 <th><i class="fas fa-bolt me-2"></i>Energi (kWh)</th>
+                                <th><i class="fas fa-battery-three-quarters me-2"></i>Baterai</th>
                                 <th><i class="fas fa-money-bill-wave me-2"></i>Total Harga</th>
                                 <th><i class="fas fa-info-circle me-2"></i>Status</th>
                             </tr>
@@ -622,6 +658,21 @@ body.light .empty-state h3 {
                                     <td>
                                         <i class="fas fa-plug me-2" style="color: #fbbf24;"></i>
                                         <strong><?php echo number_format($t['jumlah_kwh'], 2); ?> kWh</strong>
+                                    </td>
+                                    <td>
+                                        <?php if ($t['baterai_terpakai'] > 0): ?>
+                                            <div class="battery-indicator">
+                                                <i class="fas fa-battery-three-quarters battery-icon"></i>
+                                                <div>
+                                                    <div style="font-weight: 700;"><?php echo number_format($t['baterai_terpakai'], 1); ?>%</div>
+                                                    <small style="font-size: 0.75rem; opacity: 0.8;">
+                                                        <?php echo ceil($t['baterai_terpakai'] / 100); ?> unit
+                                                    </small>
+                                                </div>
+                                            </div>
+                                        <?php else: ?>
+                                            <span style="color: #64748b;">-</span>
+                                        <?php endif; ?>
                                     </td>
                                     <td>
                                         <span class="price-highlight">
@@ -704,7 +755,7 @@ body.light .empty-state h3 {
             
             for (let row of rows) {
                 const stationName = row.cells[1].textContent.toLowerCase();
-                const status = row.cells[4].textContent.toLowerCase();
+                const status = row.cells[5].textContent.toLowerCase();
                 const date = row.cells[0].textContent;
                 
                 let showRow = true;
