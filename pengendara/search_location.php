@@ -50,6 +50,7 @@ try {
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css" />
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="../css/pengendara-style.css">
+    <link rel="icon" type="image/png" href="../images/Logo_1.png">
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap');
 * { font-family: 'Poppins', sans-serif; margin: 0; padding: 0; box-sizing: border-box; }

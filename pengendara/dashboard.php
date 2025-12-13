@@ -75,6 +75,7 @@ try {
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 <link rel="stylesheet" href="../css/pengendara-style.css?v=<?= time(); ?>">
 <link rel="stylesheet" href="../css/alert.css?v=<?= time(); ?>">
+<link rel="icon" type="image/png" href="../images/Logo_1.png">
 <style>
     /* CRITICAL FIX - Stats Grid Mobile FULL SIZE */
     @media (max-width: 768px) {

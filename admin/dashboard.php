@@ -91,6 +91,8 @@ $stats = getDashboardStatistics($koneksi);
     <!-- Custom CSS -->
     <link rel="stylesheet" href="../css/admin-style.css">
     <link rel="stylesheet" href="../css/alert.css">
+    <link rel="icon" type="image/png" href="../images/Logo_1.png">
+
 </head>
 <body>
 

@@ -4,12 +4,12 @@ require_once '../config/koneksi.php';
 require_once '../pesan/alerts.php';
 
 // Cek authentication
-if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'mitra') {
+if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'pengendara') {
     header("Location: ../auth/login.php");
     exit;
 }
 
-$id_mitra = $_SESSION['user_id'];
+$id_pengendara = $_SESSION['user_id'];
 
 // Handle mark as read
 if (isset($_GET['mark_read']) && isset($_GET['id'])) {
@@ -18,9 +18,9 @@ if (isset($_GET['mark_read']) && isset($_GET['id'])) {
         $stmt = $koneksi->prepare("
             UPDATE notifikasi 
             SET dibaca = 1 
-            WHERE id_notifikasi = ? AND id_penerima = ? AND tipe_penerima = 'mitra'
+            WHERE id_notifikasi = ? AND id_penerima = ? AND tipe_penerima = 'pengendara'
         ");
-        $stmt->execute([$id_notif, $id_mitra]);
+        $stmt->execute([$id_notif, $id_pengendara]);
         $_SESSION['alert'] = [
             'type' => 'success',
             'message' => 'Notifikasi ditandai sudah dibaca'
@@ -38,9 +38,9 @@ if (isset($_GET['mark_all_read'])) {
         $stmt = $koneksi->prepare("
             UPDATE notifikasi 
             SET dibaca = 1 
-            WHERE id_penerima = ? AND tipe_penerima = 'mitra' AND dibaca = 0
+            WHERE id_penerima = ? AND tipe_penerima = 'pengendara' AND dibaca = 0
         ");
-        $stmt->execute([$id_mitra]);
+        $stmt->execute([$id_pengendara]);
         $_SESSION['alert'] = [
             'type' => 'success',
             'message' => 'Semua notifikasi ditandai sudah dibaca'
@@ -58,9 +58,9 @@ if (isset($_GET['delete']) && isset($_GET['id'])) {
     try {
         $stmt = $koneksi->prepare("
             DELETE FROM notifikasi 
-            WHERE id_notifikasi = ? AND id_penerima = ? AND tipe_penerima = 'mitra'
+            WHERE id_notifikasi = ? AND id_penerima = ? AND tipe_penerima = 'pengendara'
         ");
-        $stmt->execute([$id_notif, $id_mitra]);
+        $stmt->execute([$id_notif, $id_pengendara]);
         $_SESSION['alert'] = [
             'type' => 'success',
             'message' => 'Notifikasi berhasil dihapus'
@@ -76,30 +76,30 @@ try {
     // Ambil semua notifikasi
     $stmt = $koneksi->prepare("
         SELECT * FROM notifikasi 
-        WHERE id_penerima = ? AND tipe_penerima = 'mitra'
+        WHERE id_penerima = ? AND tipe_penerima = 'pengendara'
         ORDER BY dikirim_pada DESC
     ");
-    $stmt->execute([$id_mitra]);
+    $stmt->execute([$id_pengendara]);
     $notifikasi = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
     // Hitung notifikasi belum dibaca
     $stmt = $koneksi->prepare("
         SELECT COUNT(*) FROM notifikasi 
-        WHERE id_penerima = ? AND tipe_penerima = 'mitra' AND dibaca = 0
+        WHERE id_penerima = ? AND tipe_penerima = 'pengendara' AND dibaca = 0
     ");
-    $stmt->execute([$id_mitra]);
+    $stmt->execute([$id_pengendara]);
     $notifBelumDibaca = $stmt->fetchColumn();
 
-    // Ambil data mitra untuk nama
-    $stmt = $koneksi->prepare("SELECT nama_mitra FROM mitra WHERE id_mitra = ?");
-    $stmt->execute([$id_mitra]);
-    $dataMitra = $stmt->fetch(PDO::FETCH_ASSOC);
+    // Ambil data pengendara untuk nama
+    $stmt = $koneksi->prepare("SELECT nama FROM pengendara WHERE id_pengendara = ?");
+    $stmt->execute([$id_pengendara]);
+    $dataPengendara = $stmt->fetch(PDO::FETCH_ASSOC);
 
 } catch (PDOException $e) {
     error_log("Error load notifications: " . $e->getMessage());
     $notifikasi = [];
     $notifBelumDibaca = 0;
-    $dataMitra = ['nama_mitra' => 'Mitra'];
+    $dataPengendara = ['nama' => 'Pengendara'];
 }
 ?>
 <!doctype html>
@@ -107,11 +107,11 @@ try {
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Notifikasi - E-Station Mitra</title>
+    <title>Notifikasi - E-Station</title>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;800&display=swap" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <link rel="stylesheet" href="../css/mitra-style.css?v=<?= time(); ?>">
+    <link rel="stylesheet" href="../css/pengendara-style.css?v=<?= time(); ?>">
     <link rel="stylesheet" href="../css/alert.css?v=<?= time(); ?>">
     <link rel="icon" type="image/png" href="../images/Logo_1.png">
     <style>
@@ -126,11 +126,11 @@ try {
         }
         .notification-item:hover {
             transform: translateX(5px);
-            border-color: rgba(123, 97, 255, 0.3);
+            border-color: rgba(102, 126, 234, 0.3);
         }
         .notification-item.unread {
-            border-left: 4px solid #7b61ff;
-            background: linear-gradient(135deg, rgba(123, 97, 255, 0.1), rgba(255, 107, 154, 0.05));
+            border-left: 4px solid #667eea;
+            background: linear-gradient(135deg, rgba(102, 126, 234, 0.1), rgba(118, 75, 162, 0.05));
         }
         .notification-item.read {
             opacity: 0.7;
@@ -163,9 +163,10 @@ try {
             display: flex;
             gap: 10px;
             margin-top: 10px;
+            flex-wrap: wrap;
         }
         .badge-unread {
-            background: linear-gradient(135deg, #7b61ff, #ff6b9a);
+            background: linear-gradient(135deg, #667eea, #764ba2);
             color: white;
             padding: 4px 12px;
             border-radius: 20px;
@@ -181,6 +182,13 @@ try {
             opacity: 0.3;
             margin-bottom: 20px;
         }
+        .info-box {
+            background: linear-gradient(135deg, rgba(102, 126, 234, 0.1), rgba(118, 75, 162, 0.1));
+            border: 1px solid rgba(102, 126, 234, 0.3);
+            border-radius: 12px;
+            padding: 20px;
+            margin-top: 20px;
+        }
         @media (max-width: 768px) {
             .notification-item {
                 padding: 15px;
@@ -188,6 +196,13 @@ try {
             .notification-header {
                 flex-direction: column;
                 gap: 10px;
+            }
+            .notification-actions {
+                flex-direction: column;
+            }
+            .notification-actions a,
+            .notification-actions button {
+                width: 100%;
             }
         }
     </style>
@@ -200,7 +215,7 @@ try {
 </div>
 
 <!-- DESKTOP NAVBAR -->
-<?php include '../components/navbar-mitra.php'; ?>
+<?php include '../components/navbar-pengendara.php'; ?>
 
 <!-- MOBILE HEADER -->
 <div class="mobile-header d-md-none">
@@ -222,7 +237,7 @@ try {
     <?php tampilkan_alert(); ?>
 
     <!-- HEADER -->
-    <div class="d-flex justify-content-between align-items-center mb-4">
+    <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-3">
         <div>
             <h2 class="fw-bold mb-2">
                 <i class="fas fa-bell me-2"></i>
@@ -231,7 +246,7 @@ try {
                 <span class="badge-unread"><?= $notifBelumDibaca; ?> Baru</span>
                 <?php endif; ?>
             </h2>
-            <p class="text-muted mb-0">Semua notifikasi dan update terkait stasiun Anda</p>
+            <p class="text-muted mb-0">Semua notifikasi dan update terkait akun Anda</p>
         </div>
         <div class="d-none d-md-block">
             <a href="dashboard.php" class="btn btn-outline-secondary">
@@ -266,7 +281,7 @@ try {
         <div class="empty-state">
             <i class="fas fa-bell-slash text-muted"></i>
             <h4 class="text-muted mb-3">Belum Ada Notifikasi</h4>
-            <p class="text-muted mb-4">Anda akan menerima notifikasi terkait stasiun dan transaksi di sini</p>
+            <p class="text-muted mb-4">Anda akan menerima notifikasi terkait transaksi dan update akun di sini</p>
             <a href="dashboard.php" class="btn btn-primary">
                 <i class="fas fa-home me-2"></i>Kembali ke Dashboard
             </a>
@@ -286,18 +301,24 @@ try {
                 $icon = 'fa-info-circle';
                 $iconColor = 'text-primary';
                 
-                if (stripos($notif['judul'], 'disetujui') !== false || stripos($notif['judul'], 'approved') !== false) {
+                if (stripos($notif['judul'], 'berhasil') !== false || stripos($notif['judul'], 'sukses') !== false) {
                     $icon = 'fa-check-circle';
                     $iconColor = 'text-success';
-                } elseif (stripos($notif['judul'], 'ditolak') !== false || stripos($notif['judul'], 'rejected') !== false) {
+                } elseif (stripos($notif['judul'], 'gagal') !== false || stripos($notif['judul'], 'ditolak') !== false) {
                     $icon = 'fa-times-circle';
                     $iconColor = 'text-danger';
-                } elseif (stripos($notif['judul'], 'transaksi') !== false || stripos($notif['judul'], 'pembayaran') !== false) {
+                } elseif (stripos($notif['judul'], 'transaksi') !== false || stripos($notif['judul'], 'charging') !== false) {
+                    $icon = 'fa-bolt';
+                    $iconColor = 'text-warning';
+                } elseif (stripos($notif['judul'], 'pembayaran') !== false || stripos($notif['judul'], 'payment') !== false) {
                     $icon = 'fa-money-bill-wave';
                     $iconColor = 'text-success';
-                } elseif (stripos($notif['judul'], 'stok') !== false || stripos($notif['judul'], 'baterai') !== false) {
-                    $icon = 'fa-battery-half';
-                    $iconColor = 'text-warning';
+                } elseif (stripos($notif['judul'], 'saldo') !== false || stripos($notif['judul'], 'topup') !== false) {
+                    $icon = 'fa-wallet';
+                    $iconColor = 'text-info';
+                } elseif (stripos($notif['judul'], 'promo') !== false || stripos($notif['judul'], 'diskon') !== false) {
+                    $icon = 'fa-gift';
+                    $iconColor = 'text-danger';
                 }
                 
                 // Format waktu
@@ -353,40 +374,103 @@ try {
             </div>
             <?php endforeach; ?>
         </div>
-
-        <!-- PAGINATION (Optional - jika notifikasi banyak) -->
-        <?php if (count($notifikasi) > 20): ?>
-        <nav class="mt-4">
-            <ul class="pagination justify-content-center">
-                <li class="page-item"><a class="page-link" href="#">Previous</a></li>
-                <li class="page-item active"><a class="page-link" href="#">1</a></li>
-                <li class="page-item"><a class="page-link" href="#">2</a></li>
-                <li class="page-item"><a class="page-link" href="#">3</a></li>
-                <li class="page-item"><a class="page-link" href="#">Next</a></li>
-            </ul>
-        </nav>
-        <?php endif; ?>
     <?php endif; ?>
 
     <!-- INFO BOX -->
-    <div class="card mt-4" style="background: linear-gradient(135deg, rgba(123, 97, 255, 0.1), rgba(255, 107, 154, 0.1)); border: 1px solid rgba(123, 97, 255, 0.3);">
-        <div class="card-body">
-            <h6><i class="fas fa-lightbulb me-2 text-warning"></i>Tentang Notifikasi</h6>
-            <ul class="mb-0" style="font-size: 0.9rem;">
-                <li>Notifikasi akan dikirim ketika ada update penting terkait stasiun Anda</li>
-                <li>Status pengajuan stasiun (disetujui/ditolak) akan diberitahukan melalui notifikasi</li>
-                <li>Informasi transaksi dan pembayaran juga akan muncul di sini</li>
-                <li>Peringatan stok baterai rendah akan dikirim otomatis</li>
-            </ul>
-        </div>
+    <div class="info-box">
+        <h6><i class="fas fa-lightbulb me-2 text-warning"></i>Tentang Notifikasi</h6>
+        <ul class="mb-0" style="font-size: 0.9rem;">
+            <li>Notifikasi akan dikirim ketika ada update penting terkait akun Anda</li>
+            <li>Konfirmasi transaksi charging akan langsung dikirimkan</li>
+            <li>Informasi pembayaran dan saldo akan muncul di sini</li>
+            <li>Promo dan penawaran khusus juga akan diberitahukan melalui notifikasi</li>
+            <li>Anda dapat menghapus notifikasi yang sudah tidak diperlukan</li>
+        </ul>
     </div>
 </div>
 
 <!-- BOTTOM NAVIGATION (MOBILE) -->
-<?php include '../components/bottom-nav-mitra.php'; ?>
+<?php include '../components/bottom-nav.php'; ?>
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-<script src="../js/clean-url.js?v=<?= time(); ?>"></script>
-<script src="../js/mitra-dashboard.js?v=<?= time(); ?>"></script>
+<script>
+// Clean URL - Remove query parameters after page load
+if (window.history.replaceState) {
+    const url = new URL(window.location.href);
+    if (url.search) {
+        url.search = '';
+        window.history.replaceState({}, document.title, url.toString());
+    }
+}
+
+// === Tema Manual ===
+const toggleBtn = document.getElementById("toggleTheme");
+const mobileToggleBtn = document.getElementById("mobileThemeToggle");
+const body = document.body;
+
+// Fungsi untuk update icon theme
+function updateThemeIcon(isLight) {
+    const icon = isLight ? "🌙" : "☀️";
+    if (toggleBtn) toggleBtn.textContent = icon;
+    if (mobileToggleBtn) mobileToggleBtn.textContent = icon;
+}
+
+// Cek preferensi sebelumnya
+if (localStorage.getItem("theme") === "light") {
+    body.classList.add("light");
+    updateThemeIcon(true);
+} else {
+    updateThemeIcon(false);
+}
+
+// Fungsi toggle theme
+function toggleTheme() {
+    body.classList.toggle("light");
+    const isLight = body.classList.contains("light");
+    
+    if (isLight) {
+        updateThemeIcon(true);
+        localStorage.setItem("theme", "light");
+    } else {
+        updateThemeIcon(false);
+        localStorage.setItem("theme", "dark");
+    }
+}
+
+// Tombol toggle desktop
+if (toggleBtn) {
+    toggleBtn.addEventListener("click", toggleTheme);
+}
+
+// Tombol toggle mobile
+if (mobileToggleBtn) {
+    mobileToggleBtn.addEventListener("click", toggleTheme);
+}
+
+// === Auto dismiss alerts ===
+setTimeout(() => {
+    const alerts = document.querySelectorAll('.alert');
+    alerts.forEach(alert => {
+        if (alert) {
+            alert.classList.add('fade-out');
+            setTimeout(() => alert.remove(), 500);
+        }
+    });
+}, 5000);
+
+// === Smooth Scroll ===
+document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+    anchor.addEventListener('click', function (e) {
+        const href = this.getAttribute('href');
+        if (href !== '#' && href !== '#!') {
+            e.preventDefault();
+            const target = document.querySelector(href);
+            if (target) {
+                target.scrollIntoView({ behavior: 'smooth' });
+            }
+        }
+    });
+});
+</script>
 </body>
 </html>

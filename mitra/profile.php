@@ -58,6 +58,7 @@ try {
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 <link rel="stylesheet" href="../css/mitra-style.css">
 <link rel="stylesheet" href="../css/alert.css">
+<link rel="icon" type="image/png" href="../images/Logo_1.png">
 <style>
     .mobile-header {
        border-radius: 0 0 15px 20px;
