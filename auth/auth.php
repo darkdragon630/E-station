@@ -91,7 +91,7 @@ if (isset($_SESSION['user_id'])) {
                         </label>
                         <div class="password-input-wrapper">
                             <input type="password" name="password" id="password_pengendara" class="form-control" placeholder="Minimal 8 karakter" required minlength="8" oninput="checkPasswordStrength(this, 'pengendara')">
-                            <i class="fas fa-eye password-toggle" onclick="togglePassword('password_pengendara')"></i>
+                            <span class="password-toggle" onclick="togglePassword('password_pengendara')">👁️</span>
                         </div>
                         <div class="password-strength" id="strength_pengendara"></div>
                         
@@ -122,10 +122,10 @@ if (isset($_SESSION['user_id'])) {
                         </label>
                         <div class="password-input-wrapper">
                             <input type="password" name="confirm_password" id="confirm_password_pengendara" class="form-control" placeholder="Ulangi password" required oninput="checkPasswordMatch('pengendara')">
-                            <i class="fas fa-eye password-toggle" onclick="togglePassword('confirm_password_pengendara')"></i>
+                            <span class="password-toggle" onclick="togglePassword('confirm_password_pengendara')">👁️</span>
                         </div>
-                        <div class="invalid-feedback">Password tidak cocok!</div>
-                        <div class="valid-feedback">Password cocok!</div>
+                        <small class="invalid-feedback" id="invalid_pengendara">❌ Password tidak cocok!</small>
+                        <small class="valid-feedback" id="valid_pengendara">✅ Password cocok!</small>
                     </div>
                     
                     <button type="submit" id="btnPengendara" class="btn btn-primary btn-register w-100">
@@ -172,7 +172,7 @@ if (isset($_SESSION['user_id'])) {
                         </label>
                         <div class="password-input-wrapper">
                             <input type="password" name="password" id="password_mitra" class="form-control" placeholder="Minimal 8 karakter" required minlength="8" oninput="checkPasswordStrength(this, 'mitra')">
-                            <i class="fas fa-eye password-toggle" onclick="togglePassword('password_mitra')"></i>
+                            <span class="password-toggle" onclick="togglePassword('password_mitra')">👁️</span>
                         </div>
                         <div class="password-strength" id="strength_mitra"></div>
                         
@@ -203,10 +203,10 @@ if (isset($_SESSION['user_id'])) {
                         </label>
                         <div class="password-input-wrapper">
                             <input type="password" name="confirm_password" id="confirm_password_mitra" class="form-control" placeholder="Ulangi password" required oninput="checkPasswordMatch('mitra')">
-                            <i class="fas fa-eye password-toggle" onclick="togglePassword('confirm_password_mitra')"></i>
+                            <span class="password-toggle" onclick="togglePassword('confirm_password_mitra')">👁️</span>
                         </div>
-                        <div class="invalid-feedback">Password tidak cocok!</div>
-                        <div class="valid-feedback">Password cocok!</div>
+                        <small class="invalid-feedback" id="invalid_mitra">❌ Password tidak cocok!</small>
+                        <small class="valid-feedback" id="valid_mitra">✅ Password cocok!</small>
                     </div>
                     
                     <button type="submit" id="btnMitra" class="btn btn-primary btn-register w-100">
@@ -238,19 +238,17 @@ function switchTab(tabId) {
     event.target.closest('.tab-btn').classList.add('active');
 }
 
-// Toggle Password Visibility
+// Toggle Password Visibility - UPDATED dengan Emoji
 function togglePassword(fieldId) {
     const field = document.getElementById(fieldId);
-    const icon = event.target;
+    const btn = event.target;
     
     if (field.type === 'password') {
         field.type = 'text';
-        icon.classList.remove('fa-eye');
-        icon.classList.add('fa-eye-slash');
+        btn.textContent = '🙈';
     } else {
         field.type = 'password';
-        icon.classList.remove('fa-eye-slash');
-        icon.classList.add('fa-eye');
+        btn.textContent = '👁️';
     }
 }
 
@@ -291,7 +289,6 @@ function checkPasswordStrength(field, type) {
     
     if (password.length === 0) {
         strengthBar.className = 'password-strength';
-        // Reset all requirements
         [reqLength, reqLowercase, reqUppercase, reqNumber, reqSpecial].forEach(req => {
             req.classList.remove('met');
         });
@@ -356,26 +353,33 @@ function checkPasswordMatch(type) {
     const password = document.getElementById('password_' + type).value;
     const confirmPassword = document.getElementById('confirm_password_' + type).value;
     const confirmField = document.getElementById('confirm_password_' + type);
-    const invalidFeedback = confirmField.parentElement.nextElementSibling;
-    const validFeedback = invalidFeedback ? invalidFeedback.nextElementSibling : null;
+    
+    // Get feedback elements by ID (lebih reliable)
+    const invalidFeedback = document.getElementById('invalid_' + type);
+    const validFeedback = document.getElementById('valid_' + type);
     
     if (confirmPassword === '') {
         confirmField.classList.remove('is-valid', 'is-invalid');
-        if (invalidFeedback) invalidFeedback.style.display = 'none';
         if (validFeedback) validFeedback.style.display = 'none';
+        if (invalidFeedback) invalidFeedback.style.display = 'none';
         return;
     }
+    
+    // Debug log
+    console.log('Password:', password);
+    console.log('Confirm:', confirmPassword);
+    console.log('Match:', password === confirmPassword);
     
     if (password === confirmPassword && password !== '') {
         confirmField.classList.remove('is-invalid');
         confirmField.classList.add('is-valid');
-        if (invalidFeedback) invalidFeedback.style.display = 'none';
         if (validFeedback) validFeedback.style.display = 'block';
+        if (invalidFeedback) invalidFeedback.style.display = 'none';
     } else {
         confirmField.classList.remove('is-valid');
         confirmField.classList.add('is-invalid');
-        if (invalidFeedback) invalidFeedback.style.display = 'block';
         if (validFeedback) validFeedback.style.display = 'none';
+        if (invalidFeedback) invalidFeedback.style.display = 'block';
     }
 }
 

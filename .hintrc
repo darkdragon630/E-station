@@ -10,7 +10,8 @@
           "backdrop-filter",
           "scrollbar-width",
           "scrollbar-width: none",
-          "-webkit-overflow-scrolling"
+          "-webkit-overflow-scrolling",
+          "user-select"
         ]
       }
     ]

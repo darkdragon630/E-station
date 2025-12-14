@@ -188,48 +188,68 @@ textarea.form-control {
 }
 
 .password-input-wrapper .form-control {
-    padding-right: 45px; /* Berikan space untuk icon */
+    padding-right: 45px;
 }
 
-/* ===== PASSWORD TOGGLE ===== */
+/* ===== PASSWORD TOGGLE - UPDATED dengan Emoji ===== */
 .password-toggle {
     position: absolute;
     right: 12px;
     top: 50%;
     transform: translateY(-50%);
     cursor: pointer;
-    color: #6b7280;
-    transition: color 0.3s;
-    font-size: 16px;
+    font-size: 1.3rem;
+    user-select: none;
+    transition: all 0.3s ease;
     z-index: 10;
+    background: none;
+    border: none;
+    padding: 0;
+    line-height: 1;
 }
 
 .password-toggle:hover {
-    color: #1a3a52;
+    transform: translateY(-50%) scale(1.15);
+}
+
+.password-toggle:active {
+    transform: translateY(-50%) scale(0.95);
 }
 
 /* ===== VALIDATION FEEDBACK ===== */
 .invalid-feedback {
-    font-size: 12px;
-    margin-top: 5px;
+    font-size: 13px;
+    margin-top: 6px;
     color: #ef4444;
     display: none;
     text-align: left;
+    font-weight: 500;
 }
 
 .invalid-feedback.show {
     display: block;
 }
 
+.form-control.is-invalid ~ .password-input-wrapper ~ .invalid-feedback,
+.password-input-wrapper .form-control.is-invalid ~ .invalid-feedback {
+    display: block;
+}
+
 .valid-feedback {
-    font-size: 12px;
-    margin-top: 5px;
+    font-size: 13px;
+    margin-top: 6px;
     color: #10b981;
     display: none;
     text-align: left;
+    font-weight: 600;
 }
 
 .valid-feedback.show {
+    display: block;
+}
+
+.form-control.is-valid ~ .password-input-wrapper ~ .valid-feedback,
+.password-input-wrapper .form-control.is-valid ~ .valid-feedback {
     display: block;
 }
 
@@ -442,6 +462,10 @@ textarea.form-control {
     .form-box {
         padding: 30px 25px;
     }
+    
+    .password-toggle {
+        font-size: 1.2rem;
+    }
 }
 
 /* Mobile */
@@ -498,6 +522,11 @@ textarea.form-control {
         padding-right: 40px;
     }
     
+    .password-toggle {
+        font-size: 1.1rem;
+        right: 10px;
+    }
+    
     .btn-register {
         font-size: 15px;
         padding: 13px;
@@ -542,5 +571,10 @@ textarea.form-control {
     
     .password-input-wrapper .form-control {
         padding-right: 38px;
+    }
+    
+    .password-toggle {
+        font-size: 1rem;
+        right: 8px;
     }
 }
