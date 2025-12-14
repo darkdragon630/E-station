@@ -223,6 +223,18 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             color: #ef4444;
         }
         
+        /* Hide number input spinner arrows */
+        input[type="number"]::-webkit-inner-spin-button,
+        input[type="number"]::-webkit-outer-spin-button {
+            -webkit-appearance: none;
+            margin: 0;
+        }
+        
+        input[type="number"] {
+            -moz-appearance: textfield;
+            appearance: textfield;
+        }
+        
         @media (max-width: 768px) {
             .form-card {
                 padding: 20px;
@@ -371,17 +383,18 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                             <span class="input-group-text">
                                 <i class="fas fa-calendar"></i>
                             </span>
-                            <input type="number" 
+                            <input type="text" 
                                    class="form-control" 
                                    id="tahun" 
                                    name="tahun" 
                                    placeholder="<?= date('Y') ?>" 
                                    value="<?= htmlspecialchars($_POST['tahun'] ?? '') ?>"
-                                   min="2000" 
-                                   max="<?= date('Y') + 1 ?>"
+                                   maxlength="4"
+                                   inputmode="numeric"
+                                   pattern="[0-9]*"
                                    required>
                         </div>
-                        <small class="form-text">Tahun pembuatan kendaraan (<?= date('Y') - 24 ?> - <?= date('Y') + 1 ?>)</small>
+                        <small class="form-text">Tahun pembuatan kendaraan (2000 - <?= date('Y') + 1 ?>)</small>
                     </div>
                     
                     <!-- Preview Data -->
@@ -473,16 +486,70 @@ document.getElementById('no_plat').addEventListener('blur', function() {
     updatePreview();
 });
 
-// ========== VALIDASI TAHUN ==========
-document.getElementById('tahun').addEventListener('input', function() {
-    const currentYear = new Date().getFullYear();
-    const year = parseInt(this.value);
-    
-    if (year < 2000) {
-        this.value = 2000;
-    } else if (year > currentYear + 1) {
-        this.value = currentYear + 1;
+// ========== FIXED YEAR INPUT - HANYA ANGKA ==========
+const tahunInput = document.getElementById('tahun');
+const currentYear = new Date().getFullYear();
+const minYear = 2000;
+const maxYear = currentYear + 1;
+
+// Hanya izinkan input angka
+tahunInput.addEventListener('keypress', function(e) {
+    // Hanya izinkan angka 0-9
+    if (e.key < '0' || e.key > '9') {
+        e.preventDefault();
     }
+});
+
+// Handle paste - hanya izinkan angka
+tahunInput.addEventListener('paste', function(e) {
+    e.preventDefault();
+    const pastedText = (e.clipboardData || window.clipboardData).getData('text');
+    const numbers = pastedText.replace(/\D/g, '').substring(0, 4);
+    this.value = numbers;
+    updatePreview();
+});
+
+// Validasi saat input
+tahunInput.addEventListener('input', function(e) {
+    // Hapus semua karakter non-angka
+    let value = this.value.replace(/\D/g, '');
+    
+    // Batasi maksimal 4 digit
+    if (value.length > 4) {
+        value = value.substring(0, 4);
+    }
+    
+    this.value = value;
+    updatePreview();
+});
+
+// Validasi saat blur (kehilangan fokus)
+tahunInput.addEventListener('blur', function() {
+    let value = this.value.trim();
+    
+    // Jika kosong, biarkan kosong (required akan handle)
+    if (value === '') {
+        return;
+    }
+    
+    // Jika kurang dari 4 digit, tidak valid
+    if (value.length < 4) {
+        this.value = '';
+        updatePreview();
+        return;
+    }
+    
+    const year = parseInt(value);
+    
+    // Validasi range tahun
+    if (year < minYear) {
+        alert(`⚠️ Tahun tidak valid!\nTahun minimal adalah ${minYear}`);
+        this.value = '';
+    } else if (year > maxYear) {
+        alert(`⚠️ Tahun tidak valid!\nTahun maksimal adalah ${maxYear}`);
+        this.value = '';
+    }
+    
     updatePreview();
 });
 
@@ -508,7 +575,7 @@ function updatePreview() {
 }
 
 // Add event listeners for all inputs
-['merk', 'model', 'no_plat', 'tahun'].forEach(id => {
+['merk', 'model', 'no_plat'].forEach(id => {
     document.getElementById(id).addEventListener('input', updatePreview);
 });
 
@@ -524,12 +591,34 @@ document.getElementById('addVehicleForm').addEventListener('submit', function(e)
         return false;
     }
     
-    const tahun = parseInt(document.getElementById('tahun').value);
-    const currentYear = new Date().getFullYear();
+    const tahunValue = document.getElementById('tahun').value.trim();
     
-    if (tahun < 2000 || tahun > currentYear + 1) {
+    if (tahunValue === '') {
         e.preventDefault();
-        alert(`⚠️ Tahun kendaraan tidak valid!\n\nTahun harus antara 2000 - ${currentYear + 1}`);
+        alert('⚠️ Tahun kendaraan wajib diisi!');
+        document.getElementById('tahun').focus();
+        return false;
+    }
+    
+    if (tahunValue.length !== 4) {
+        e.preventDefault();
+        alert('⚠️ Tahun harus 4 digit!\nContoh: 2024');
+        document.getElementById('tahun').focus();
+        return false;
+    }
+    
+    const tahun = parseInt(tahunValue);
+    
+    if (isNaN(tahun)) {
+        e.preventDefault();
+        alert('⚠️ Tahun harus berupa angka!');
+        document.getElementById('tahun').focus();
+        return false;
+    }
+    
+    if (tahun < minYear || tahun > maxYear) {
+        e.preventDefault();
+        alert(`⚠️ Tahun kendaraan tidak valid!\n\nTahun harus antara ${minYear} - ${maxYear}`);
         document.getElementById('tahun').focus();
         return false;
     }
