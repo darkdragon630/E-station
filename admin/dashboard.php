@@ -72,7 +72,7 @@ function getDashboardStatistics($koneksi) {
 // ==================== MAIN EXECUTION ====================
 checkAdminAuth();
 
-$nama_admin = $_SESSION['nama'];
+$nama_admin = $_SESSION['nama_admin'] ?? 'Admin';
 $stats = getDashboardStatistics($koneksi);
 ?>
 <!DOCTYPE html>
