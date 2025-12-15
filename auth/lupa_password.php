@@ -431,10 +431,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     <!-- Kontainer lupa password -->
     <div class="container">
         <div class="login-card">
-            <a href="login.php" class="back-link">
-                ← Kembali ke Login
-            </a>
-            
             <h1 class="title">Lupa Password?</h1>
             <p class="subtitle">Masukkan email Anda untuk reset password</p>
 
